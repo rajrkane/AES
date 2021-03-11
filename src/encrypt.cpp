@@ -24,8 +24,72 @@ int s_box[256] =
 ,0xe1 ,0xf8 ,0x98 ,0x11 ,0x69 ,0xd9 ,0x8e ,0x94 ,0x9b ,0x1e ,0x87 ,0xe9 ,0xce ,0x55 ,0x28 ,0xdf
 ,0x8c ,0xa1 ,0x89 ,0x0d ,0xbf ,0xe6 ,0x42 ,0x68 ,0x41 ,0x99 ,0x2d ,0x0f ,0xb0 ,0x54 ,0xbb ,0x16 };
 
-void keyExpansion(unsigned char* key) {
-	// Not implemented
+//From Appendix A of the AES spec
+//This is the first byte of the rcon word array which is x^(i-1) in GF(2^8)
+unsigned char rcon1_i_bytes[11] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36 };
+
+//Key, which is keysize bytes and expansion which has been allocated 16 * (Nr + 1) bytes or 16 * (keysize/4 + 7) bytes
+//The key should be 16, 24, or 32 bytes large
+void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char keysize) {
+
+	int i = 0;
+	int Nk = keysize / 4;
+	int Nr = (Nk + 6);
+
+	for ( ; i < keysize; i++)
+	{
+		expansion[i] = key[i];
+	}
+
+	i = Nk;
+	unsigned char temp[4];
+
+	// i < Nb * (Nr + 1)
+	//The number of bytes in a word is 4
+	while (i < (4 * (Nr + 1)))
+	{
+		std::cout << i << " ";
+
+		temp[0] = expansion[(4 * (i - 1))];
+		temp[1] = expansion[(4 * (i - 1)) + 1];
+		temp[2] = expansion[(4 * (i - 1)) + 2];
+		temp[3] = expansion[(4 * (i - 1)) + 3];
+
+		if (i % Nk == 0)
+		{
+			//ROTWORD on temp
+			unsigned char rotTemp = temp[0];
+			temp[0] = temp[1];
+			temp[1] = temp[2];
+			temp[2] = temp[3];
+			temp[3] = rotTemp;
+
+			//SUBWORD
+			temp[0] = s_box[temp[0]];
+			temp[1] = s_box[temp[1]];
+			temp[2] = s_box[temp[2]];
+			temp[3] = s_box[temp[3]];
+
+			//Xor with Rcon[i/Nk]
+			//Since the last 3 bytes of Rcon are always zero, then temp[0] is the only byte changing
+			temp[0] ^= rcon1_i_bytes[(i / Nk) - 1];
+		}
+		else if (Nk > 6 && i % Nk == 4)
+		{
+			//SUBWORD
+			temp[0] = s_box[temp[0]];
+			temp[1] = s_box[temp[1]];
+			temp[2] = s_box[temp[2]];
+			temp[3] = s_box[temp[3]];
+		}
+
+		//w[i] = w[i-Nk] xor temp
+		expansion[4 * i] = expansion[4 * (i - Nk)] ^ temp[0];
+		expansion[4 * i + 1] = expansion[4 * (i - Nk) + 1] ^ temp[1];
+		expansion[4 * i + 2] = expansion[4 * (i - Nk) + 2] ^ temp[2];
+		expansion[4 * i + 3] = expansion[4 * (i - Nk) + 3] ^ temp[3];
+		i++;
+	}
 }
 
 void subBytes(unsigned char* state) {
@@ -77,8 +141,6 @@ void addRoundKey(unsigned char* state, unsigned char* key) {
 	}
 }
 
-
-
 void encrpyt(unsigned char* input, unsigned char* output, unsigned char* key) {
 	// Create the state array
 	unsigned char state[NUM_BYTES] = input;
@@ -88,23 +150,29 @@ void encrpyt(unsigned char* input, unsigned char* output, unsigned char* key) {
 		state[i] = input[i];
 	}
 	
-	keyExpansion();
+	//Hardcode key size for now
+	unsigned int keysize = 16;
+
+	unsigned char expandedKey[16 * (keysize/4 + 7)]
+
+	keyExpansion(key, expandedKey, keysize);
 
 	// Intial Round
-	addRoundKey(state, key);
+	addRoundKey(state, &(expandedKey[0]));
 
-	// Change this to actual number of rounds
-	int numRounds = 1;
+	// Round = 
+	int numRounds = keysize/4 + 6;
 
 	for (int i = 0; i < numRounds; i++) {
 		subBytes(state);
 		shiftRows(state);
 		mixColumns(state);
-		addRoundKey(state, key);
+		//The key index is supposed to be 4 * roundNum but since the key is bytes, its 4*4*roundNum
+		addRoundKey(state, &(expandedKey[16*i]));
 	}
 
 	// Final Round - No MixedColumns
 	subBytes(state);
 	shiftRows(state);
-	addRoundKey(state, key);
+	addRoundKey(state, &(expandedKey[16*numRounds]));
 }
