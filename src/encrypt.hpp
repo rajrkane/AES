@@ -14,4 +14,8 @@ void shiftRows(unsigned char* state);
 
 void mixColumns(unsigned char* state);
 
+unsigned char galoisFieldMult(unsigned char a, unsigned char b);
+unsigned char galoisFieldInv(unsigned char a);
+unsigned char getSboxValue(unsigned char index);
+
 #endif
