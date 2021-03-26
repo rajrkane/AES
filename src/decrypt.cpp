@@ -1,6 +1,8 @@
 // decrypt.cpp
 #include "decrypt.hpp"
 
+const int NUM_BYTES = 16;
+
 const unsigned char s_box_inv[256] = {
   0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb, 
   0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb, 
@@ -19,3 +21,106 @@ const unsigned char s_box_inv[256] = {
   0xa0, 0xe0, 0x3b, 0x4d, 0xae, 0x2a, 0xf5, 0xb0, 0xc8, 0xeb, 0xbb, 0x3c, 0x83, 0x53, 0x99, 0x61, 
   0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };
+
+//Key, which is keysize bytes and expansion which has been allocated 16 * (Nr + 1) bytes or 16 * (keysize/4 + 7) bytes
+//The key should be 16, 24, or 32 bytes large
+// TODO: consolidate this function and the one in encrypt (they are the same)
+void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char keysize) {
+
+	int i = 0;
+	int Nk = keysize / 4;
+	int Nr = (Nk + 6);
+
+	for ( ; i < keysize; i++)
+	{
+		expansion[i] = key[i];
+	}
+
+	i = Nk;
+	unsigned char temp[4];
+
+	// i < Nb * (Nr + 1)
+	//The number of bytes in a word is 4
+	while (i < (4 * (Nr + 1)))
+	{
+		//std::cout << i << " ";
+
+		temp[0] = expansion[(4 * (i - 1))];
+		temp[1] = expansion[(4 * (i - 1)) + 1];
+		temp[2] = expansion[(4 * (i - 1)) + 2];
+		temp[3] = expansion[(4 * (i - 1)) + 3];
+
+		if (i % Nk == 0)
+		{
+			//ROTWORD on temp
+			unsigned char rotTemp = temp[0];
+			temp[0] = temp[1];
+			temp[1] = temp[2];
+			temp[2] = temp[3];
+			temp[3] = rotTemp;
+
+			//SUBWORD
+			temp[0] = getSboxValue(temp[0]);
+			temp[1] = getSboxValue(temp[1]);
+			temp[2] = getSboxValue(temp[2]);
+			temp[3] = getSboxValue(temp[3]);
+
+			//Xor with Rcon[i/Nk]
+			//Since the last 3 bytes of Rcon are always zero, then temp[0] is the only byte changing
+			temp[0] ^= rcon1_i_bytes[(i / Nk) - 1];
+		}
+		else if (Nk > 6 && i % Nk == 4)
+		{
+			//SUBWORD
+			temp[0] = s_box[temp[0]];
+			temp[1] = s_box[temp[1]];
+			temp[2] = s_box[temp[2]];
+			temp[3] = s_box[temp[3]];
+		}
+
+		//w[i] = w[i-Nk] xor temp
+		expansion[4 * i] = expansion[4 * (i - Nk)] ^ temp[0];
+		expansion[4 * i + 1] = expansion[4 * (i - Nk) + 1] ^ temp[1];
+		expansion[4 * i + 2] = expansion[4 * (i - Nk) + 2] ^ temp[2];
+		expansion[4 * i + 3] = expansion[4 * (i - Nk) + 3] ^ temp[3];
+		i++;
+	}
+}
+
+// AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1])
+void addRoundKey(unsigned char* state, unsigned char* key, int numRounds) {
+	int r = numRounds * NUM_BYTES;
+  for (int i = 0; i < NUM_BYTES; i++) {
+    if (r = (numRounds+1) * NUM_BYTES) {
+      break
+    }
+    state[i] = state[i] ^ key[r];
+    r += 1;
+	}
+}
+
+void subBytesInv(unsigned char* state);
+
+void shiftRowsInv(unsigned char* state);
+
+void mixColumnsInv(unsigned char* state);
+
+void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize) {
+  // Create the state array
+  unsigned char state[NUM_BYTES];
+
+  // Copy 16 bytes from input into state
+  for (int i = 0; i < NUM_BYTES; i++) {
+    state[i] = input[i];
+  }
+
+  unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
+
+  keyExpansion(key, expandedKey, keysize);
+
+  int numRounds = keysize/4 + 6;
+
+  // Initial Round
+  addRoundKey(state, &(expandedKey[0], numRounds));
+
+}
