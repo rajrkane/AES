@@ -87,16 +87,10 @@ void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char ke
 	}
 }
 
-// AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1])
-void addRoundKey(unsigned char* state, unsigned char* key, int numRounds) {
-	int r = numRounds * NUM_BYTES;
+void addRoundKey(unsigned char* state, unsigned char* key) {
   for (int i = 0; i < NUM_BYTES; i++) {
-    if (r = (numRounds+1) * NUM_BYTES) {
-      break
-    }
-    state[i] = state[i] ^ key[r];
-    r += 1;
-	}
+    state[i] = state[i] ^ key[i]
+  }
 }
 
 void subBytesInv(unsigned char* state);
@@ -120,7 +114,24 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
 
   int numRounds = keysize/4 + 6;
 
-  // Initial Round
-  addRoundKey(state, &(expandedKey[0], numRounds));
+  // Initial round
+  addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
+
+  for (int round = numRounds; round > 1; round--){
+    subBytesInv(state);
+    shiftRowsInv(state);
+    addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
+    mixColumnsInv(state);
+  }
+
+  // Final round
+  shiftRowsInv(state);
+  subBytesInv(state);
+  addRoundKey(state, &(expandedKey[0]))
+
+  // Set output to state
+  for (int i = 0; i < NUM_BYTES; i++) {
+    output[i] = state[i];
+  }
 
 }

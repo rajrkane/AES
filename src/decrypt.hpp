@@ -10,7 +10,7 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key);
 
 void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char keysize);
 
-void addRoundKey(unsigned char* state, unsigned char* key, int numRounds);
+void addRoundKey(unsigned char* state, unsigned char* key);
 
 void subBytesInv(unsigned char* state);
 
