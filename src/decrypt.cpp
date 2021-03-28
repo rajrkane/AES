@@ -95,7 +95,37 @@ void addRoundKey(unsigned char* state, unsigned char* key) {
 
 void subBytesInv(unsigned char* state);
 
-void shiftRowsInv(unsigned char* state);
+void shiftRowsInv(unsigned char* state) {
+  unsigned char shiftedState[NUM_BYTES];
+
+    // Row 1 - Bytes remain unchanged
+    shiftedState[0] = state[0];
+    shiftedState[4] = state[4];
+    shiftedState[8] = state[8];
+    shiftedState[12] = state[12];
+
+    // Row 2 - Bytes are shifted over three positions to the left
+    shiftedState[1] = state[13];
+    shiftedState[5] = state[1];
+    shiftedState[9] = state[5];
+    shiftedState[13] = state[9];
+
+    // Row 3 - Bytes are shifted over two positions to the left
+    shiftedState[2] = state[10];
+    shiftedState[6] = state[14];
+    shiftedState[10] = state[2];
+    shiftedState[14] = state[6];
+
+    // Row 4 - Bytes are shifted over one position to the left
+    shiftedState[3] = state[7];
+    shiftedState[7] = state[11];
+    shiftedState[11] = state[15];
+    shiftedState[15] = state[3];
+
+    for (int i = 0; i < NUM_BYTES; i++) {
+      state[i] = shiftedState[i];
+    }
+}
 
 void mixColumnsInv(unsigned char* state);
 
@@ -118,8 +148,8 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
 
   for (int round = numRounds; round > 1; round--){
-    subBytesInv(state);
     shiftRowsInv(state);
+    subBytesInv(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
     mixColumnsInv(state);
   }
