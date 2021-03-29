@@ -22,17 +22,74 @@ const unsigned char s_box_inv[256] = {
   0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };
 
+unsigned char galoisFieldMult(unsigned char a, unsigned char b) {
+  unsigned char product = 0;
+	for (unsigned char i = 0; i < 8; i++)
+	{
+		if ((b & 1) == 1)
+		{
+			product ^= a;
+		}
+
+		unsigned char aHighBit = a & 0x80;
+		a = a << 1;
+		if (aHighBit)
+		{
+			a ^= 0x1b;
+		}
+
+		b = b >> 1;
+	}
+
+	return product;
+}
+
+unsigned char galoisFieldInv(unsigned char a) {
+  unsigned char product = a;
+
+	// The inverse in GF(2^8) is really x^(255-1)
+	// This is 253 iterations because the product is already a or a^1
+	for (int i = 0; i < 253; i++) {
+		product = galoisFieldMult(product, a);
+	}
+
+	return product;
+}
+
+// TODO: move this function to AESmath.cpp
+unsigned char getSboxValue(unsigned char index) {
+  unsigned char matRow = 0xF1;
+  unsigned char out = 0;
+
+  // Per bit
+  for (int i = 0; i < 8; i++) {
+    // Find the bits that, when 'multiplied' by the matrix row, are one
+    unsigned char app = (unsigned char) ((int)index & (int)matRow);
+
+    // Every bit of the application
+    for (int j = 0; j < 8; j++) {
+      // Set output bit to sum of bits
+      out ^= (((app >> j) & 1) << i);
+    }
+
+    // Left rotate the matrix row
+    matRow = (matRow << 1) | (matRow >> 7);
+  }
+
+  out ^= 0x63;
+  return galoisFieldInv(out);
+}
+
 //Key, which is keysize bytes and expansion which has been allocated 16 * (Nr + 1) bytes or 16 * (keysize/4 + 7) bytes
 //The key should be 16, 24, or 32 bytes large
-// TODO: consolidate this function and the one in encrypt (they are the same)
+// TODO: move this function to AESkey.cpp
 void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char keysize) {
 
 	int i = 0;
 	int Nk = keysize / 4;
 	int Nr = (Nk + 6);
 
-	for ( ; i < keysize; i++)
-	{
+	for ( ; i < keysize; i++) {
 		expansion[i] = key[i];
 	}
 
@@ -93,7 +150,11 @@ void addRoundKey(unsigned char* state, unsigned char* key) {
   }
 }
 
-void subBytesInv(unsigned char* state);
+void subBytesInv(unsigned char* state) {
+  for (int i = 0; i < NUM_BYTES; i++) {
+    state[i] = getSboxValue(state[i]);
+  }
+}
 
 void shiftRowsInv(unsigned char* state) {
   unsigned char shiftedState[NUM_BYTES];
