@@ -94,7 +94,6 @@ void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char ke
 		expansion[4 * i + 1] = expansion[4 * (i - Nk) + 1] ^ temp[1];
 		expansion[4 * i + 2] = expansion[4 * (i - Nk) + 2] ^ temp[2];
 		expansion[4 * i + 3] = expansion[4 * (i - Nk) + 3] ^ temp[3];
-		i++;
 	}
 }
 
