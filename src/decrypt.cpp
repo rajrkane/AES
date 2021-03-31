@@ -140,7 +140,6 @@ void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char ke
 		expansion[4 * i + 1] = expansion[4 * (i - Nk) + 1] ^ temp[1];
 		expansion[4 * i + 2] = expansion[4 * (i - Nk) + 2] ^ temp[2];
 		expansion[4 * i + 3] = expansion[4 * (i - Nk) + 3] ^ temp[3];
-		i++;
 	}
 }
 
@@ -188,7 +187,20 @@ void shiftRowsInv(unsigned char* state) {
     }
 }
 
-void mixColumnsInv(unsigned char* state);
+void mixColumnsInv(unsigned char* state) {
+  unsigned char tmp[NUM_BYTES];
+
+	for (int i = 0; i < 4; i++) {
+		tmp[4 * i] = galoisFieldMult(0x0e, state[i * 4]) ^ galoisFieldMult(0x0b, state[i * 4 + 1]) ^ galoisFieldMult(0x0d, state[i * 4 + 2]) ^ galoisFieldMult(0x09, state[i * 4 + 3]);
+		tmp[4 * i + 1] = galoisFieldMult(0x09, state[i * 4]) ^ galoisFieldMult(0x0e, state[i * 4 + 1]) ^ galoisFieldMult(0x0b, state[i * 4 + 2]) ^ galoisFieldMult(0x0d, state[i * 4 + 3]);
+		tmp[4 * i + 2] = galoisFieldMult(0x0d, state[i * 4]) ^ galoisFieldMult(0x09, state[i * 4 + 1]) ^ galoisFieldMult(0x0e, state[i * 4 + 2]) ^ galoisFieldMult(0x0b, state[i * 4 + 3]);
+		tmp[4 * i + 3] = galoisFieldMult(0x0b, state[i * 4]) ^ galoisFieldMult(0x0d, state[i * 4 + 1]) ^ galoisFieldMult(0x09, state[i * 4 + 2]) ^ galoisFieldMult(0x0e, state[i * 4 + 3]);
+	}
+
+	for (int i = 0; i < NUM_BYTES; i++) {
+		state[i] = tmp[i];
+	}
+}
 
 void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize) {
   // Create the state array
