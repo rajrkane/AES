@@ -80,12 +80,13 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
   unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
   keyExpansion(key, expandedKey, keysize);
   int numRounds = keysize/4 + 6;
+  printstate(key);
 
   // Initial round
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
   printstate(state);
 
-  for (int round = numRounds; round > 1; round--){
+  for (int round = numRounds-1; round > 0; round--){
     shiftRowsInv(state);
     printstate(state);
     subBytesInv(state);
