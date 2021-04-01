@@ -4,8 +4,6 @@
 //This is the first byte of the rcon word array which is x^(i-1) in GF(2^8)
 unsigned char rcon1_i_bytes[11] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36 };
 
-const int NUM_BYTES = 16;
-
 //Common functions to Encryption and Decryption
 
 //Multiplies a by b in GF(2^8) 
@@ -108,7 +106,7 @@ void addRoundKey(unsigned char* state, unsigned char* key) {
 
 unsigned char getSboxValue(unsigned char index) {
 	unsigned char inv = galoisFieldInv(index);
-	unsigned char matRow = 0xF1;
+	unsigned char matRow = 0xF1; // 11110001
 	unsigned char out = 0;
 	
 	//Per bit
@@ -130,7 +128,7 @@ unsigned char getSboxValue(unsigned char index) {
 }
 
 unsigned char getSboxValueInv(unsigned char index) {
-  unsigned char matRow = 0xF1;
+  unsigned char matRow = 0xA4; // 10100100
   unsigned char out = 0;
 
   // Per bit
@@ -148,6 +146,7 @@ unsigned char getSboxValueInv(unsigned char index) {
     matRow = (matRow << 1) | (matRow >> 7);
   }
 
-  out ^= 0x63;
+  out ^= 0x5;
+
   return galoisFieldInv(out);
 }

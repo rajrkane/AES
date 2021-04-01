@@ -1,6 +1,7 @@
 // decrypt.cpp
 #include "decrypt.hpp"
 #include "AESmath.hpp"
+#include <iostream>
 
 void subBytesInv(unsigned char* state) {
   for (int i = 0; i < NUM_BYTES; i++) {
@@ -55,6 +56,17 @@ void mixColumnsInv(unsigned char* state) {
 	}
 }
 
+void printstate(unsigned char* state)
+{
+	for (int i = 0; i < NUM_BYTES; i++)
+	{
+		std::cout << std::hex << (int) state[i];
+		std::cout << " ";
+	}
+
+	std::cout << std::endl;
+}
+
 void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize) {
   // Create the state array
   unsigned char state[NUM_BYTES];
@@ -63,6 +75,7 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
   for (int i = 0; i < NUM_BYTES; i++) {
     state[i] = input[i];
   }
+  printstate(state);
 
   unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
   keyExpansion(key, expandedKey, keysize);
@@ -70,21 +83,41 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
 
   // Initial round
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
+  printstate(state);
 
   for (int round = numRounds; round > 1; round--){
     shiftRowsInv(state);
+    printstate(state);
     subBytesInv(state);
+    printstate(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
+    printstate(state);
     mixColumnsInv(state);
+    printstate(state);
   }
 
   // Final round
   shiftRowsInv(state);
+  printstate(state);
   subBytesInv(state);
-  addRoundKey(state, &(expandedKey[0]))
+  printstate(state);
+  addRoundKey(state, &(expandedKey[0]));
+  printstate(state);
 
   // Set output to state
   for (int i = 0; i < NUM_BYTES; i++) {
     output[i] = state[i];
   }
+}
+
+int main() {
+  unsigned char input[16] = {
+    0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
+  }; 
+  unsigned char output[16];
+  unsigned char key[16] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+  };
+  int keysize = 16;
+  decrypt(input, output, key, keysize);
 }
