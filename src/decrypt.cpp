@@ -3,13 +3,13 @@
 #include "AESmath.hpp"
 #include <iostream>
 
-void subBytesInv(unsigned char* state) {
+void invSubBytes(unsigned char* state) {
   for (int i = 0; i < NUM_BYTES; i++) {
-    state[i] = getSboxValueInv(state[i]);
+    state[i] = invGetSboxValue(state[i]);
   }
 }
 
-void shiftRowsInv(unsigned char* state) {
+void invShiftRows(unsigned char* state) {
   unsigned char shiftedState[NUM_BYTES];
 
     // Row 1 - Bytes remain unchanged
@@ -41,7 +41,7 @@ void shiftRowsInv(unsigned char* state) {
     }
 }
 
-void mixColumnsInv(unsigned char* state) {
+void invMixColumns(unsigned char* state) {
   unsigned char tmp[NUM_BYTES];
 
 	for (int i = 0; i < 4; i++) {
@@ -67,6 +67,7 @@ void printstate(unsigned char* state)
 	std::cout << std::endl;
 }
 
+// TODO: remove printstate calls in submission
 void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize) {
   // Create the state array
   unsigned char state[NUM_BYTES];
@@ -87,20 +88,20 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
   printstate(state);
 
   for (int round = numRounds-1; round > 0; round--){
-    shiftRowsInv(state);
+    invShiftRows(state);
     printstate(state);
-    subBytesInv(state);
+    invSubBytes(state);
     printstate(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
     printstate(state);
-    mixColumnsInv(state);
+    invMixColumns(state);
     printstate(state);
   }
 
   // Final round
-  shiftRowsInv(state);
+  invShiftRows(state);
   printstate(state);
-  subBytesInv(state);
+  invSubBytes(state);
   printstate(state);
   addRoundKey(state, &(expandedKey[0]));
   printstate(state);

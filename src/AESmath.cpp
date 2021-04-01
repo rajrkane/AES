@@ -127,7 +127,7 @@ unsigned char getSboxValue(unsigned char index) {
 	return out ^ 0x63;
 }
 
-unsigned char getSboxValueInv(unsigned char index) {
+unsigned char invGetSboxValue(unsigned char index) {
   unsigned char matRow = 0xA4; // 10100100
   unsigned char out = 0;
 

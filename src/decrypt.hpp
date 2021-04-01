@@ -4,10 +4,10 @@
 
 void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize);
 
-void subBytesInv(unsigned char* state);
+void invSubBytes(unsigned char* state);
 
-void shiftRowsInv(unsigned char* state);
+void invShiftRows(unsigned char* state);
 
-void mixColumnsInv(unsigned char* state);
+void invMixColumns(unsigned char* state);
 
 #endif
