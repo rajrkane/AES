@@ -127,6 +127,11 @@ unsigned char getSboxValue(unsigned char index) {
 	return out ^ 0x63;
 }
 
+/**
+  Computes inverse sbox value.
+  @param index: byte of state array whose value to compute
+  @return inverse sbox value of index
+*/
 unsigned char invGetSboxValue(unsigned char index) {
   unsigned char matRow = 0xA4; // 10100100
   unsigned char out = 0;
