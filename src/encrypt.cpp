@@ -2,11 +2,24 @@
 #include "encrypt.hpp"
 #include <iostream>
 
+/**
+	Substitues bytes in the state for bytes from a substitution box
+	@param state: the state array to modify
+	@return none
+*/
+
 void subBytes(unsigned char* state) {
 	for (int i = 0; i < NUM_BYTES; i++) {
 		state[i] = getSboxValue(state[i]);
 	}
 }
+
+/**
+	Left shifts the bytes in each row of the state based on that rows index, i.e. row 0 gets no shift, row 1 once to left...
+	@param state: the state array to modify
+	@return none
+*/
+
 
 void shiftRows(unsigned char* state) {
 	unsigned char shiftedState[NUM_BYTES];
@@ -35,12 +48,17 @@ void shiftRows(unsigned char* state) {
 	shiftedState[11] = state[7];
 	shiftedState[15] = state[11];
 
+	//Replace the state array with the shifted bytes
 	for (int i = 0; i < NUM_BYTES; i++) {
 		state[i] = shiftedState[i];
 	}
 }
 
-
+/**
+	mixColumns, multiplies the columns of the state by the polynomial {02}, {03} shifted around the rows
+	@param state: the state array to modify
+	@return none
+*/
 void mixColumns(unsigned char* state) {
 	unsigned char tmp[NUM_BYTES];
 
@@ -51,24 +69,32 @@ void mixColumns(unsigned char* state) {
 		tmp[4 * i + 3] = galoisFieldMult(0x03, state[i * 4]) ^ state[i * 4 + 1] ^ state[i * 4 + 2] ^ galoisFieldMult(0x02, state[i * 4 + 3]);
 	}
 
+	//Replace the state array with the mixed bytes
 	for (int i = 0; i < NUM_BYTES; i++) {
 		state[i] = tmp[i];
 	}
 }
 
+// Since decrypt already has a printstate, leave this commented out so it can compile
+// void printstate(unsigned char* state)
+// {
+// 	for (int i = 0; i < NUM_BYTES; i++)
+// 	{
+// 		std::cout << std::hex << (int) state[i];
+// 		std::cout << " ";
+// 	}
 
+// 	std::cout << std::endl;
+// }
 
-void printstate(unsigned char* state)
-{
-	for (int i = 0; i < NUM_BYTES; i++)
-	{
-		std::cout << std::hex << (int) state[i];
-		std::cout << " ";
-	}
-
-	std::cout << std::endl;
-}
-
+/**
+  Cipher, which implements shiftRows, sSubBytesand mixColumns
+  @param input: array of hex values representing the input bytes
+  @param output: array of hex values that is copied to from final state
+  @param key: key to use
+  @param keysize: size of the key
+  @return none
+*/
 void encrypt(unsigned char* input, unsigned char* output, unsigned char* key, unsigned int keysize) {
 	// Create the state array
 	unsigned char state[NUM_BYTES];
@@ -85,11 +111,10 @@ void encrypt(unsigned char* input, unsigned char* output, unsigned char* key, un
 	// Intial Round
 	addRoundKey(state, &(expandedKey[0]));
 	//printstate(state);
-
-	// Round = 
+	
 	int numRounds = keysize/4 + 6;
 
-	for (int i = 1; i < numRounds; i++) {
+	for (int i = 0; i < numRounds-1; i++) {
 		subBytes(state);
 		//printstate(state);
 		shiftRows(state);
@@ -97,7 +122,7 @@ void encrypt(unsigned char* input, unsigned char* output, unsigned char* key, un
 		mixColumns(state);
 		//printstate(state);
 		//The key index is supposed to be 4 * roundNum but since the key is bytes, its 4*4*roundNum
-		addRoundKey(state, &(expandedKey[16*i]));
+		addRoundKey(state, &(expandedKey[16*(i+1)]));
 		//printstate(state);
 	}
 
@@ -109,7 +134,7 @@ void encrypt(unsigned char* input, unsigned char* output, unsigned char* key, un
 	addRoundKey(state, &(expandedKey[16*numRounds]));
 	//printstate(state);
 
-	for (int i = 0; i < NUM_BYTES; i++){
+	for (int i = 0; i < NUM_BYTES; i++) {
 		output[i] = state[i];
 	}
 }
