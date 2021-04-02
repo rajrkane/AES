@@ -11,6 +11,8 @@ unsigned char galoisFieldInv(unsigned char a);
 
 unsigned char getSboxValue(unsigned char index);
 
+unsigned char invGetSboxValue(unsigned char index);
+
 void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char keysize);
 
 void addRoundKey(unsigned char* state, unsigned char* key);

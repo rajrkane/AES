@@ -2,4 +2,12 @@
 #ifndef DECRYPT_HPP
 #define DECRYPT_HPP
 
+void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize);
+
+void invSubBytes(unsigned char* state);
+
+void invShiftRows(unsigned char* state);
+
+void invMixColumns(unsigned char* state);
+
 #endif

@@ -106,7 +106,7 @@ void addRoundKey(unsigned char* state, unsigned char* key) {
 
 unsigned char getSboxValue(unsigned char index) {
 	unsigned char inv = galoisFieldInv(index);
-	unsigned char matRow = 0xF1;
+	unsigned char matRow = 0xF1; // 11110001
 	unsigned char out = 0;
 	
 	//Per bit
@@ -125,4 +125,33 @@ unsigned char getSboxValue(unsigned char index) {
 	}
 
 	return out ^ 0x63;
+}
+
+/**
+  Computes inverse sbox value.
+  @param index: byte of state array whose value to compute
+  @return inverse sbox value of index
+*/
+unsigned char invGetSboxValue(unsigned char index) {
+  unsigned char matRow = 0xA4; // 10100100
+  unsigned char out = 0;
+
+  // Per bit
+  for (int i = 0; i < 8; i++) {
+    // Find the bits that, when 'multiplied' by the matrix row, are one
+    unsigned char app = (unsigned char) ((int)index & (int)matRow);
+
+    // Every bit of the application
+    for (int j = 0; j < 8; j++) {
+      // Set output bit to sum of bits
+      out ^= (((app >> j) & 1) << i);
+    }
+
+    // Left rotate the matrix row
+    matRow = (matRow << 1) | (matRow >> 7);
+  }
+
+  out ^= 0x5;
+
+  return galoisFieldInv(out);
 }
