@@ -6,7 +6,12 @@ unsigned char rcon1_i_bytes[11] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x
 
 //Common functions to Encryption and Decryption
 
-//Multiplies a by b in GF(2^8) 
+/**
+  Multiplies a by b in GF(2^8) 
+  @param a: the first polynomial
+  @param b: the second polynomial
+  @return a * b in GF(2^8)
+*/
 unsigned char galoisFieldMult(unsigned char a, unsigned char b) {
 	unsigned char product = 0;
 	for (unsigned char i = 0; i < 8; i++) {
@@ -26,6 +31,11 @@ unsigned char galoisFieldMult(unsigned char a, unsigned char b) {
 	return product;
 }
 
+/**
+  Computes the mutiplicative inverse of the polynomial a in GF(2^8)
+  @param a: the polynomial to find the inverse of
+  @return the inverse of a
+*/
 unsigned char galoisFieldInv(unsigned char a) {
 	unsigned char product = a;
 
@@ -40,8 +50,15 @@ unsigned char galoisFieldInv(unsigned char a) {
 	return product;
 }
 
-//Key, which is keysize bytes and expansion which has been allocated 16 * (Nr + 1) bytes or 16 * (keysize/4 + 7) bytes
-//The key should be 16, 24, or 32 bytes large
+/**
+  Computes the AES key expansion
+  @param key: the input key array
+  @param expansion: the array to put the key expansion into
+                    The array needs 16 * (Nr + 1) bytes or 16 * (keysize/4 + 7) bytes allocated
+  @param keysize: the size of the input key in bytes
+  				  Note: the key should be 16, 24, or 32 bytes large
+  @return none
+*/
 void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char keysize) {
 
 	int Nk = keysize / 4;
@@ -98,12 +115,22 @@ void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char ke
 }
 
 // XOR each byte of state and key
+/**
+  Computes inverse sbox value.
+  @param index: byte of state array whose value to compute
+  @return inverse sbox value of index
+*/
 void addRoundKey(unsigned char* state, unsigned char* key) {
 	for (int i = 0; i < NUM_BYTES; i++) {
 		state[i] = state[i] ^ key[i];
 	}
 }
 
+/**
+  Computes inverse sbox value.
+  @param index: byte of state array whose value to compute
+  @return inverse sbox value of index
+*/
 unsigned char getSboxValue(unsigned char index) {
 	unsigned char inv = galoisFieldInv(index);
 	unsigned char matRow = 0xF1; // 11110001
