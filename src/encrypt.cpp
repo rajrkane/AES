@@ -3,11 +3,10 @@
 #include <iostream>
 
 /**
-	Substitues bytes in the state for bytes from a substitution box
+	Substitutes bytes in the state for bytes from a substitution box
 	@param state: the state array to modify
 	@return none
 */
-
 void subBytes(unsigned char* state) {
 	for (int i = 0; i < NUM_BYTES; i++) {
 		state[i] = getSboxValue(state[i]);
@@ -19,8 +18,6 @@ void subBytes(unsigned char* state) {
 	@param state: the state array to modify
 	@return none
 */
-
-
 void shiftRows(unsigned char* state) {
 	unsigned char shiftedState[NUM_BYTES];
 
@@ -76,16 +73,16 @@ void mixColumns(unsigned char* state) {
 }
 
 // Since decrypt already has a printstate, leave this commented out so it can compile
-// void printstate(unsigned char* state)
-// {
-// 	for (int i = 0; i < NUM_BYTES; i++)
-// 	{
-// 		std::cout << std::hex << (int) state[i];
-// 		std::cout << " ";
-// 	}
+void printstate(unsigned char* state)
+{
+	for (int i = 0; i < NUM_BYTES; i++)
+	{
+		std::cout << std::hex << (int) state[i];
+		std::cout << " ";
+	}
 
-// 	std::cout << std::endl;
-// }
+	std::cout << std::endl;
+}
 
 /**
   Cipher, which implements shiftRows, sSubBytesand mixColumns
@@ -132,7 +129,7 @@ void encrypt(unsigned char* input, unsigned char* output, unsigned char* key, un
 	shiftRows(state);
 	//printstate(state);
 	addRoundKey(state, &(expandedKey[16*numRounds]));
-	//printstate(state);
+	printstate(state);
 
 	for (int i = 0; i < NUM_BYTES; i++) {
 		output[i] = state[i];

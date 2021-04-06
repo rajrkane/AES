@@ -77,14 +77,14 @@ void invMixColumns(unsigned char* state) {
 
 
 // TODO: remove printstate calls in final version
-void printstate(unsigned char* state) {
-	for (int i = 0; i < NUM_BYTES; i++) {
-		std::cout << std::hex << (int) state[i];
-		std::cout << " ";
-	}
+// void printstate(unsigned char* state) {
+// 	for (int i = 0; i < NUM_BYTES; i++) {
+// 		std::cout << std::hex << (int) state[i];
+// 		std::cout << " ";
+// 	}
 
-	std::cout << std::endl;
-}
+// 	std::cout << std::endl;
+// }
 
 
 /**
@@ -101,36 +101,36 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
   for (int i = 0; i < NUM_BYTES; i++) {
     state[i] = input[i];
   }
-  printstate(state);
+  // printstate(state);
 
   unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
   keyExpansion(key, expandedKey, keysize);
   int numRounds = keysize/4 + 6;
-  printstate(key);
+  // printstate(key);
 
   // Initial round
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
-  printstate(state);
+  // printstate(state);
 
   // Rounds
   for (int round = numRounds-1; round > 0; round--){
     invShiftRows(state);
-    printstate(state);
+    // printstate(state);
     invSubBytes(state);
-    printstate(state);
+    // printstate(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
-    printstate(state);
+    // printstate(state);
     invMixColumns(state);
-    printstate(state);
+    // printstate(state);
   }
 
   // Final round
   invShiftRows(state);
-  printstate(state);
+  // printstate(state);
   invSubBytes(state);
-  printstate(state);
+  // printstate(state);
   addRoundKey(state, &(expandedKey[0]));
-  printstate(state);
+  // printstate(state);
 
   // Set output to state
   for (int i = 0; i < NUM_BYTES; i++) {
@@ -140,15 +140,15 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
 
 
 // // TODO: main function is here temporarily for testing. It will be better to have a main file that calls encrypt() and decrypt()
-int main() {
-  // Example C.1 in AES specs
-  unsigned char input[16] = {
-    0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
-  }; 
-  unsigned char output[16];
-  unsigned char key[16] = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-  };
-  int keysize = 16;
-  decrypt(input, output, key, keysize);
-}
+// int main() {
+//   // Example C.1 in AES specs
+//   unsigned char input[16] = {
+//     0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
+//   }; 
+//   unsigned char output[16];
+//   unsigned char key[16] = {
+//     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+//   };
+//   int keysize = 16;
+//   decrypt(input, output, key, keysize);
+// }
