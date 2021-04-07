@@ -77,14 +77,14 @@ void invMixColumns(unsigned char* state) {
 
 
 // TODO: remove printstate calls in final version
-// void printstate(unsigned char* state) {
-// 	for (int i = 0; i < NUM_BYTES; i++) {
-// 		std::cout << std::hex << (int) state[i];
-// 		std::cout << " ";
-// 	}
+void printstate(unsigned char* state) {
+	for (int i = 0; i < NUM_BYTES; i++) {
+		std::cout << std::hex << (int) state[i];
+		std::cout << " ";
+	}
 
-// 	std::cout << std::endl;
-// }
+	std::cout << std::endl;
+}
 
 
 /**
@@ -95,7 +95,7 @@ void invMixColumns(unsigned char* state) {
   @param keysize: size of the key
   @return none
 */
-void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize) {
+void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, unsigned char* key, int keysize) {
   unsigned char state[NUM_BYTES];
 
   for (int i = 0; i < NUM_BYTES; i++) {
@@ -130,7 +130,7 @@ void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, in
   invSubBytes(state);
   // printstate(state);
   addRoundKey(state, &(expandedKey[0]));
-  // printstate(state);
+  printstate(state);
 
   // Set output to state
   for (int i = 0; i < NUM_BYTES; i++) {
