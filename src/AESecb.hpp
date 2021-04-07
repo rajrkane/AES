@@ -6,7 +6,7 @@
 #include "encrypt.hpp"
 #include "decrypt.hpp"
 
-void encrypt_ecb(unsigned char* input, unsigned char* output, unsigned char* key, unsigned int keysize);
+void encrypt_ecb(std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output, unsigned char* key, unsigned int keysize);
 void decrypt_ecb();
 
 #endif
