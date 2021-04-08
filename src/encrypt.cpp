@@ -92,13 +92,14 @@ void mixColumns(unsigned char* state) {
   @param keysize: size of the key
   @return none
 */
-void encrypt(std::array<unsigned char, 16> &input, std::array<unsigned char, 16>& output, unsigned char* key, unsigned int keysize) {
-	// Create the state array
+void encrypt(std::array<unsigned char, 16> &input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
+  // Create the state array
 	unsigned char state[NUM_BYTES];
 	// Copy 16 bytes from input into state
 	for (int i = 0; i < NUM_BYTES; i++) {
 		state[i] = input[i];
 	}
+  const int keysize = key.size();
 	unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
 
 	keyExpansion(key, expandedKey, keysize);

@@ -5,10 +5,9 @@
 #include "AESmath.hpp"
 #include "encrypt.hpp"
 #include "decrypt.hpp"
-#include <array>
 #include <vector>
 
-void encrypt_ecb(std::array<unsigned char, 16>& input, std::vector<unsigned char>& output, unsigned char* key, unsigned int keysize);
-void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& output, unsigned char* key, unsigned int keysize);
+void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key);
+void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key);
 
 #endif

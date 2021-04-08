@@ -97,7 +97,9 @@ void invMixColumns(unsigned char* state) {
 */
 // do the input and output parameters need have '&' as follows instead?:
 // std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output
-void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, unsigned char* key, int keysize) {
+void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
+  
+  const int keysize = key.size();
   unsigned char state[NUM_BYTES];
 
   for (int i = 0; i < NUM_BYTES; i++) {

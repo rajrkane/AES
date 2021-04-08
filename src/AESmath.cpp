@@ -59,7 +59,7 @@ unsigned char galoisFieldInv(unsigned char a) {
   				  Note: the key should be 16, 24, or 32 bytes large
   @return none
 */
-void keyExpansion(unsigned char* key, unsigned char* expansion, unsigned char keysize) {
+void keyExpansion(const std::vector<unsigned char>& key, unsigned char* expansion, unsigned char keysize) {
 
 	int Nk = keysize / 4;
 	int Nr = (Nk + 6);
