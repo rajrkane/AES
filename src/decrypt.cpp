@@ -93,8 +93,10 @@ void printstate(unsigned char* state) {
   @param output: array of hex values that is copied to from final state
   @param key: key to use
   @param keysize: size of the key
-  @return none
+  @return array of decrypted values
 */
+// do the input and output parameters need have '&' as follows instead?:
+// std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output
 void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, unsigned char* key, int keysize) {
   unsigned char state[NUM_BYTES];
 
@@ -130,7 +132,7 @@ void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>&
   invSubBytes(state);
   // printstate(state);
   addRoundKey(state, &(expandedKey[0]));
-  printstate(state);
+  // printstate(state);
 
   // Set output to state
   for (int i = 0; i < NUM_BYTES; i++) {

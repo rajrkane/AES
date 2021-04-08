@@ -9,6 +9,6 @@
 #include <vector>
 
 void encrypt_ecb(std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output, unsigned char* key, unsigned int keysize);
-void decrypt_ecb(std::vector<unsigned char>& input, std::array<unsigned char, 16>& output, unsigned char* key, unsigned int keysize);
+void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& output, unsigned char* key, unsigned int keysize);
 
 #endif
