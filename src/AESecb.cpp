@@ -35,7 +35,8 @@ void encrypt_ecb(std::array<unsigned char, 16>& input, std::vector<unsigned char
   const int padLength = 16 - (inputSize % 16);
   const int plaintextLength = inputSize + padLength;
 
-  std::array<unsigned char, plaintextLength> plaintext;
+  std::vector<unsigned char> plaintext;
+  plaintext.reserve(plaintextLength);
 
   for (int i = 0; i < inputSize; i++) {
     plaintext[i] = input[i];
