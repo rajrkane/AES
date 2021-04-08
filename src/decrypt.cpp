@@ -77,14 +77,14 @@ void invMixColumns(unsigned char* state) {
 
 
 // TODO: remove printstate calls in final version
-void printstate(unsigned char* state) {
-	for (int i = 0; i < NUM_BYTES; i++) {
-		std::cout << std::hex << (int) state[i];
-		std::cout << " ";
-	}
+// void printstate(unsigned char* state) {
+// 	for (int i = 0; i < NUM_BYTES; i++) {
+// 		std::cout << std::hex << (int) state[i];
+// 		std::cout << " ";
+// 	}
 
-	std::cout << std::endl;
-}
+// 	std::cout << std::endl;
+// }
 
 
 /**
@@ -93,7 +93,7 @@ void printstate(unsigned char* state) {
   @param output: array of hex values that is copied to from final state
   @param key: key to use
   @param keysize: size of the key
-  @return array of decrypted values
+  @return none
 */
 // do the input and output parameters need have '&' as follows instead?:
 // std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output
