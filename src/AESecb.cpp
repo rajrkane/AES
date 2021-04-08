@@ -91,7 +91,6 @@ void printDecryptOutput(std::vector<unsigned char>& output) {
 void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& output, unsigned char* key, unsigned int keysize) {
 
   const int inputSize = input.size(); 
-  std::vector<unsigned char> plaintext;
 
   // Loop over number of blocks
   for (int i = 0; i < inputSize / 16; i++) {
