@@ -20,7 +20,7 @@ AESRand::AESRand() {
   @return none
 */
 AESRand::~AESRand() {
-    //Zero out the arrays to avoid possible information leaking
+    //Reset the state of the PRG
     //Probably does not need to happen but I'm paranoid
     this->mt19937.seed(0);
 }
