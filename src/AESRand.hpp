@@ -4,6 +4,8 @@
 #include <vector>
 #include <array>
 #include <random>
+#include <iostream>
+#include <fstream>
 #include "AESmath.hpp"
 
 //AESRand class
@@ -13,12 +15,10 @@ public:
 
     ~AESRand();
 
-    void seed();
-
     std::vector<unsigned char> generateBytes(unsigned int numBytes);
 
 private:
-    std::mt19937 mt19937;
+    std::ifstream urandom;
 };
 
 
