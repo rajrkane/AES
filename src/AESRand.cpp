@@ -10,7 +10,7 @@
 */
 AESRand::AESRand() {
     //Some compilers will complain that a default seed is being used
-    //The method seedMt19937 will seed this
+    //The method seed will seed this
     this->mt19937 = std::mt19937();
     this->seed();
 }
