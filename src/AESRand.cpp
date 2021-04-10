@@ -1,86 +1,75 @@
-//
-// Created by eric on 4/7/21.
-//
-
 #include <random>
-#include <ios>
-#include <iostream>
+#include <algorithm>
 #include "AESRand.hpp"
 #include "encrypt.hpp"
 
-//This uses AES in ctr mode to act as a PRF
-//The rng seed is the key that is used for AES
+/**
+  AESRand constructor
 
+  @return none
+*/
 AESRand::AESRand() {
-    this->state = std::array<unsigned char, NUM_BYTES>();
-    this->key = std::array<unsigned char, RAND_KEY_SIZE>();
-
+    //Some compilers will complain that a default seed is being used
+    //The method seedMt19937 will seed this
+    this->mt19937 = std::mt19937();
     this->seed();
-    //Start the counter at zero
-    this->state.fill(0);
 }
 
+/**
+  AESRand deconstructor
+  @return none
+*/
 AESRand::~AESRand() {
     //Zero out the arrays to avoid possible information leaking
-    this->state.fill(0);
-    this->key.fill(0);
+    //Probably does not need to happen but I'm paranoid
+    this->mt19937.seed(0);
 }
 
-//Request a vector will numBytes of random data
-std::vector<unsigned char> AESRand::generateBytes(unsigned int numBytes) {
-    //Prepare the return vector
-    std::vector<unsigned char> ret;
-    ret.reserve(numBytes);
-
-    unsigned int bytesGenerated = 0;
-    unsigned char *data = new unsigned char[NUM_BYTES];
-
-    while (bytesGenerated < numBytes) {
-        //Change to use modified encrypt
-        //Also using the 256 bit key mode because why not
-        encrypt(this->state.data(), data, this->key.data(), this->key.size());
-
-        for (int i = 0; i < NUM_BYTES; i++) {
-            //If we have generated the requested number of bytes then stop
-            if (bytesGenerated >= numBytes)
-                break;
-            //Add one byte from the returned data
-            //Probably could use array slicing and adding
-            ret.push_back(data[i]);
-            bytesGenerated++;
-        }
-
-        //Increment the state
-        for (int i = NUM_BYTES - 1; i >= 0; i--) {
-            //Increment the current byte
-            this->state[i] = this->state[i] + 1;
-            //If the byte did not overflow to zero, then stop
-            //Otherwise continue until an overflow does not happen
-            if (this->state[i] != 0)
-                break;
-        }
-
-    }
-
-    delete[] data;
-
-    return ret;
-}
-
-//This generates new random numbers for the key
+/**
+  AESRand::seed
+  This seeds the state of the Mersenne Twister engine used as a PRG
+  As shown in class, seeding a prg with random numbers will produce indistinguishably random output
+  Also see MSC51-CPP
+  @return none
+*/
 void AESRand::seed() {
+    //Completely seed the entire state of the mt19937 engine
+    //The standard way of seeding the engine is by passing in a unsigned int as a parameter in the constructor
+    //This is only 32 bits of entropy for a huge (19937 bits) internal state
+    //We seed the entire state this way with the entropy from std::random_device
     //This is the best source of randomness in the standard library
     //Note: this is highly implementation dependent. This could provide actual hardware entropy or just numbers from a PRG
     //On most linux and windows builds, this should come from cpu random instructions, high precision event counters,
     //user mouse movement and others. But this is not required from the specification.
+    std::array<unsigned int, std::mt19937::state_size> rand_data{};
     std::random_device rd;
-    //Fill the key, which acts as the seed with what should be high quality randomness
-    for (int i = 0; i < RAND_KEY_SIZE; i += 4) {
-        //rd returns 32 or 64 bit numbers, we will take just the first 32 bits
-        unsigned int rand = rd();
-        this->key[i] = (unsigned char) (rand & 0xFF);
-        this->key[i + 1] = (unsigned char) ((rand >> 8) & 0xFF);
-        this->key[i + 2] = (unsigned char) ((rand >> 16) & 0xFF);
-        this->key[i + 3] = (unsigned char) ((rand >> 24) & 0xFF);
+    for (unsigned int& i : rand_data)
+    {
+        i = rd();
     }
+
+    std::seed_seq seeds(rand_data.begin(), rand_data.end());
+    this->mt19937.seed(seeds);
+}
+
+/**
+  AESRand::generateBytes
+  Generates some number of bytes using the MT19937 engine
+  @param numBytes: The number of random bytes needed
+  @return A vector with the random bytes
+*/
+std::vector<unsigned char> AESRand::generateBytes(unsigned int numBytes) {
+    std::vector<unsigned char> ret(numBytes, 0);
+
+    std::size_t bytesGenerated = 0;
+
+    //Uniformly distribute the output from the twister to be in the range of a byte
+    std::uniform_int_distribution<> distrib(0, 255);
+
+    while (bytesGenerated < numBytes)
+    {
+        ret[bytesGenerated] = (unsigned char) distrib(this->mt19937);
+        bytesGenerated++;
+    }
+    return ret;
 }
