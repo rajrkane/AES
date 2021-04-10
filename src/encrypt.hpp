@@ -3,8 +3,9 @@
 #define ENCRYPT_HPP 
 
 #include "AESmath.hpp"
+#include <array>
 
-void encrypt(unsigned char* plainInput, unsigned char* encryptedOutput, unsigned char* key, unsigned int keysize);
+void encrypt(std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key);
 void subBytes(unsigned char* state);
 void shiftRows(unsigned char* state);
 void mixColumns(unsigned char* state);

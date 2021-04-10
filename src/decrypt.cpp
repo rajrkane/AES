@@ -3,7 +3,6 @@
   Implementation of inverse cipher for AES-128 algorithm
 */
 #include "decrypt.hpp"
-#include "AESmath.hpp"
 #include <iostream>
 
 /**
@@ -78,14 +77,14 @@ void invMixColumns(unsigned char* state) {
 
 
 // TODO: remove printstate calls in final version
-void printstate(unsigned char* state) {
-	for (int i = 0; i < NUM_BYTES; i++) {
-		std::cout << std::hex << (int) state[i];
-		std::cout << " ";
-	}
+// void printstate(unsigned char* state) {
+// 	for (int i = 0; i < NUM_BYTES; i++) {
+// 		std::cout << std::hex << (int) state[i];
+// 		std::cout << " ";
+// 	}
 
-	std::cout << std::endl;
-}
+// 	std::cout << std::endl;
+// }
 
 
 /**
@@ -96,42 +95,46 @@ void printstate(unsigned char* state) {
   @param keysize: size of the key
   @return none
 */
-void decrypt(unsigned char* input, unsigned char* output, unsigned char* key, int keysize) {
+// do the input and output parameters need have '&' as follows instead?:
+// std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output
+void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
+  
+  const int keysize = key.size();
   unsigned char state[NUM_BYTES];
 
   for (int i = 0; i < NUM_BYTES; i++) {
     state[i] = input[i];
   }
-  printstate(state);
+  // printstate(state);
 
   unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
   keyExpansion(key, expandedKey, keysize);
   int numRounds = keysize/4 + 6;
-  printstate(key);
+  // printstate(key);
 
   // Initial round
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
-  printstate(state);
+  // printstate(state);
 
   // Rounds
   for (int round = numRounds-1; round > 0; round--){
     invShiftRows(state);
-    printstate(state);
+    // printstate(state);
     invSubBytes(state);
-    printstate(state);
+    // printstate(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
-    printstate(state);
+    // printstate(state);
     invMixColumns(state);
-    printstate(state);
+    // printstate(state);
   }
 
   // Final round
   invShiftRows(state);
-  printstate(state);
+  // printstate(state);
   invSubBytes(state);
-  printstate(state);
+  // printstate(state);
   addRoundKey(state, &(expandedKey[0]));
-  printstate(state);
+  // printstate(state);
 
   // Set output to state
   for (int i = 0; i < NUM_BYTES; i++) {
