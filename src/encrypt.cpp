@@ -72,17 +72,6 @@ void mixColumns(unsigned char* state) {
 	}
 }
 
-// Since decrypt already has a printstate, leave this commented out so it can compile
-// void printstate(unsigned char* state)
-// {
-// 	for (int i = 0; i < NUM_BYTES; i++)
-// 	{
-// 		std::cout << std::hex << (int) state[i];
-// 		std::cout << " ";
-// 	}
-
-// 	std::cout << std::endl;
-// }
 
 /**
   Cipher, which implements shiftRows, sSubBytesand mixColumns
