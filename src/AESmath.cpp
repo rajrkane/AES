@@ -59,7 +59,7 @@ unsigned char galoisFieldInv(unsigned char a) {
   				  Note: the key should be 16, 24, or 32 bytes large
   @return none
 */
-void keyExpansion(const std::vector<unsigned char>& key, unsigned char* expansion, unsigned char keysize) {
+void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned char>&  expansion, unsigned char keysize) {
 
 	int Nk = keysize / 4;
 	int Nr = (Nk + 6);
@@ -120,7 +120,7 @@ void keyExpansion(const std::vector<unsigned char>& key, unsigned char* expansio
   @param index: byte of state array whose value to compute
   @return inverse sbox value of index
 */
-void addRoundKey(unsigned char* state, unsigned char* key) {
+void addRoundKey(std::array<unsigned char, 16>& state, unsigned char* key) {
 	for (int i = 0; i < NUM_BYTES; i++) {
 		state[i] = state[i] ^ key[i];
 	}
