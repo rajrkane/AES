@@ -36,10 +36,10 @@ bool remove_padding(std::vector<unsigned char>& input)
 {
     const int lastByte = (int) input.back();
     //Only continue if the last byte is in the valid range
-    if (lastByte <= NUM_BYTES) {
+    if (lastByte <= NUM_BYTES && lastByte > 0) {
         //Verify that the padding is okay
         for (std::size_t i = 0; i < lastByte; i++) {
-            if (input[input.size() - i - 1] != lastByte)
+            if (input.at(input.size() - i - 1) != lastByte)
                 //Do nothing and return
                 return false;
         }
@@ -67,13 +67,13 @@ void encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
     // Plaintext accommodates both the input and the necessary padding
     std::vector<unsigned char> plaintext;
-    plaintext.reserve(plaintextLength);
     plaintext = input;
+    plaintext.reserve(plaintextLength);
 
     // TODO: ECB and CBC both repeat this code for padding. Cleaner for padding to have its own function
     for (std::size_t i = 0; i < padLength; i++) {
         // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
-        plaintext[inputSize + i] = padLength;
+        plaintext.push_back(padLength);
     }
 
     // Loop over number of blocks
@@ -82,7 +82,8 @@ void encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
         // Loop over block size and fill each block
         std::array<unsigned char, 16> block;
         for (std::size_t j = 0; j < 16; j++) {
-            block[j] = plaintext[j + (i * 16)];
+            // Using .at instead of [] for internal bounds checking, see CTR50-CPP
+            block.at(j) = plaintext.at(j + (i * 16));
         }
 
         // Encrypt each block
@@ -91,7 +92,7 @@ void encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy encrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(outputBlock[j]);
+            output.push_back(outputBlock.at(j));
         }
     }
 
@@ -116,7 +117,7 @@ void decrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
         // Loop over block size and fill each block
         std::array<unsigned char, 16> block;
         for (std::size_t j = 0; j < 16; j++) {
-            block[j] = input[j + (i * 16)];
+            block.at(j) = input.at(j + (i * 16));
         }
 
         // Decrypt each block
@@ -125,7 +126,7 @@ void decrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy decrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(outputPadded[j]);
+            output.push_back(outputPadded.at(j));
         }
     }
 
@@ -168,20 +169,20 @@ void encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
     // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
     for (std::size_t i = 0; i < padLength; i++) {
         // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
-        plaintext[inputSize + i] = padLength;
+        plaintext.push_back(padLength);
     }
 
     // Encrypt the first block
     std::array<unsigned char, 16> block;
     for (std::size_t j = 0; j < 16; j++) {
-        block[j] = plaintext[j] ^ IV[j];
+        block.at(j) = plaintext.at(j) ^ IV.at(j);
     }
 
     std::array<unsigned char, 16> outputBlock;
     encrypt(block, outputBlock, key);
 
     for (std::size_t j = 0; j < 16; j++) {
-        output.push_back(outputBlock[j]);
+        output.push_back(outputBlock.at(j));
     }
 
     // Loop over the number of subsequent blocks
@@ -189,7 +190,7 @@ void encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
         // Loop over block size and fill each block
         for (std::size_t j = 0; j < 16; j++) {
             //std::cout << std::hex << (int) plaintext[j + (i * 16)] << ' ';
-            block[j] = plaintext[j + (i * 16)] ^ output[j + ((i - 1) * 16)];
+            block.at(j) = plaintext.at(j + (i * 16)) ^ output.at(j + ((i - 1) * 16));
         }
 
         //std::cout << std::endl;
@@ -199,7 +200,7 @@ void encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy encrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(outputBlock[j]);
+            output.push_back(outputBlock.at(j));
         }
     }
 
@@ -222,15 +223,15 @@ void decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
     // Decrypt the first block
     std::array<unsigned char, 16> block;
     for (std::size_t i = 0; i < 16; i++) {
-        block[i] = input[i];
+        block.at(i) = input.at(i);
     }
 
     std::array<unsigned char, 16> outputPadded;
     decrypt(block, outputPadded, key);
 
     for (std::size_t i = 0; i < 16; i++) {
-        outputPadded[i] ^= IV[i];
-        output.push_back(outputPadded[i]);
+        outputPadded.at(i) ^= IV.at(i);
+        output.push_back(outputPadded.at(i));
     }
 
     // Loop over the number of subsequent blocks
@@ -238,7 +239,7 @@ void decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Loop over block size and fill each block
         for (std::size_t j = 0; j < 16; j++) {
-            block[j] = input[j + (i * 16)];
+            block.at(j) = input.at(j + (i * 16));
         }
 
         // Decrypt each block
@@ -246,8 +247,8 @@ void decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy decrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            outputPadded[j] ^= input[j + ((i - 1) * 16)];
-            output.push_back(outputPadded[j]);
+            outputPadded.at(j) ^= input.at(j + ((i - 1) * 16));
+            output.push_back(outputPadded.at(j));
         }
     }
 
@@ -272,10 +273,10 @@ void decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 void incrementCounter(std::array<unsigned char, NUM_BYTES> &counter, int numCounterBytes) {
     for (int i = NUM_BYTES - 1; i >= numCounterBytes; i--) {
         //Increment the current byte
-        counter[i] = counter[i] + 1;
+        counter.at(i) = counter.at(i) + 1;
         //If the byte did not overflow to zero, then stop
         //Otherwise continue until an overflow does not happen
-        if (counter[i] != 0)
+        if (counter.at(i) != 0)
             break;
     }
 }
@@ -303,7 +304,7 @@ void encrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
     // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
     for (std::size_t i = 0; i < padLength; i++) {
         // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
-        plaintext[inputSize + i] = padLength;
+        plaintext.push_back(padLength);
     }
 
     std::array<unsigned char, NUM_BYTES> counter{};
@@ -320,7 +321,7 @@ void encrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         //XOR output with the plaintext and put into output block
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(plaintext[j + (i * 16)] ^ outputBlock[j]);
+            output.push_back(plaintext.at(j + (i * 16)) ^ outputBlock.at(j));
         }
 
         incrementCounter(counter, NUM_BYTES / 2);
@@ -355,7 +356,7 @@ void decrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         //XOR output with the plaintext and put into output block
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(input[j + (i * 16)] ^ outputBlock[j]);
+            output.push_back(input.at(j + (i * 16)) ^ outputBlock.at(j));
         }
 
         incrementCounter(counter, NUM_BYTES / 2);
@@ -395,7 +396,7 @@ void encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
     // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
     for (std::size_t i = 0; i < padLength; i++) {
         // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
-        plaintext[inputSize + i] = padLength;
+        plaintext.push_back(padLength);
     }
 
     // Encrypt the first block
@@ -407,14 +408,14 @@ void encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
     encrypt(block, outputBlock, key);
 
     for (std::size_t j = 0; j < 16; j++) {
-        output.push_back(outputBlock[j] ^ plaintext[j]);
+        output.push_back(outputBlock.at(j) ^ plaintext.at(j));
     }
 
     // Loop over the number of subsequent blocks
     for (std::size_t i = 1; i < plaintextLength / 16; i++) {
         // Loop over block size and fill each block
         for (std::size_t j = 0; j < 16; j++) {
-            block[j] = output[j + ((i - 1) * 16)];
+            block.at(j) = output.at(j + ((i - 1) * 16));
         }
 
         // Encrypt each block
@@ -422,7 +423,7 @@ void encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy encrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(outputBlock[j] ^ plaintext[j + (i*16)]);
+            output.push_back(outputBlock.at(j) ^ plaintext.at(j + (i*16)));
         }
     }
 
@@ -450,14 +451,14 @@ void decrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
     encrypt(block, outputBlock, key);
 
     for (std::size_t j = 0; j < 16; j++) {
-        output.push_back(outputBlock[j] ^ input[j]);
+        output.push_back(outputBlock.at(j) ^ input.at(j));
     }
 
     // Loop over the number of subsequent blocks
     for (std::size_t i = 1; i < inputSize / 16; i++) {
         // Loop over block size and fill each block
         for (std::size_t j = 0; j < 16; j++) {
-            block[j] = input[j + ((i - 1) * 16)];
+            block.at(j) = input.at(j + ((i - 1) * 16));
         }
 
         // Encrypt each block
@@ -465,7 +466,7 @@ void decrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy encrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(outputBlock[j] ^ input[j + (i*16)]);
+            output.push_back(outputBlock.at(j) ^ input.at(j + (i*16)));
         }
     }
     // Remove padding
@@ -502,7 +503,7 @@ void encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
     // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
     for (std::size_t i = 0; i < padLength; i++) {
         // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
-        plaintext[inputSize + i] = padLength;
+        plaintext.push_back(padLength);
     }
 
     // Encrypt the first block
@@ -514,14 +515,14 @@ void encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
     encrypt(block, outputBlock, key);
 
     for (std::size_t j = 0; j < 16; j++) {
-        output.push_back(outputBlock[j] ^ plaintext[j]);
+        output.push_back(outputBlock.at(j) ^ plaintext.at(j));
     }
 
     // Loop over the number of subsequent blocks
     for (std::size_t i = 1; i < plaintextLength / 16; i++) {
         // Loop over block size and fill each block
         for (std::size_t j = 0; j < 16; j++) {
-            block[j] = outputBlock[j];
+            block.at(j) = outputBlock.at(j);
         }
 
         // Encrypt each block
@@ -529,7 +530,7 @@ void encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy encrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(outputBlock[j] ^ plaintext[j + (i*16)]);
+            output.push_back(outputBlock.at(j) ^ plaintext.at(j + (i*16)));
         }
     }
 
@@ -557,14 +558,14 @@ void decrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
     encrypt(block, outputBlock, key);
 
     for (std::size_t j = 0; j < 16; j++) {
-        output.push_back(outputBlock[j] ^ input[j]);
+        output.push_back(outputBlock.at(j) ^ input.at(j));
     }
 
     // Loop over the number of subsequent blocks
     for (std::size_t i = 1; i < inputSize / 16; i++) {
         // Loop over block size and fill each block
         for (std::size_t j = 0; j < 16; j++) {
-            block[j] = outputBlock[j];
+            block.at(j) = outputBlock.at(j);
         }
 
         // Encrypt each block
@@ -572,7 +573,7 @@ void decrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
         // Copy encrypted block to the output
         for (std::size_t j = 0; j < 16; j++) {
-            output.push_back(outputBlock[j] ^ input[j + (i*16)]);
+            output.push_back(outputBlock.at(j) ^ input.at(j + (i*16)));
         }
     }
     // Remove padding
