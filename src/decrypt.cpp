@@ -76,17 +76,6 @@ void invMixColumns(unsigned char* state) {
 }
 
 
-// TODO: remove printstate calls in final version
-// void printstate(unsigned char* state) {
-// 	for (int i = 0; i < NUM_BYTES; i++) {
-// 		std::cout << std::hex << (int) state[i];
-// 		std::cout << " ";
-// 	}
-
-// 	std::cout << std::endl;
-// }
-
-
 /**
   Inverse cipher, which implements invShiftRows, invSubBytes, invMixColumns
   @param input: array of hex values representing output of cipher
