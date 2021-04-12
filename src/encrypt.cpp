@@ -2,13 +2,14 @@
 #include "encrypt.hpp"
 #include <iostream>
 
+
 /**
 	Substitutes bytes in the state for bytes from a substitution box
 	@param state: the state array to modify
 	@return none
 */
 void subBytes(std::array<unsigned char, 16>& state) {
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
+	for (std::size_t i = 0; i < 16; i++) {
 		state[i] = getSboxValue(state[i]);
 	}
 }
@@ -19,7 +20,7 @@ void subBytes(std::array<unsigned char, 16>& state) {
 	@return none
 */
 void shiftRows(std::array<unsigned char, 16>& state) {
-	std::array<unsigned char, NUM_BYTES> shiftedState;
+	std::array<unsigned char, 16> shiftedState;
 
 	// Row 1 - Bytes remain unchanged
 	shiftedState[0] = state[0];
@@ -46,7 +47,7 @@ void shiftRows(std::array<unsigned char, 16>& state) {
 	shiftedState[15] = state[11];
 
 	//Replace the state array with the shifted bytes
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
+	for (std::size_t i = 0; i < 16; i++) {
 		state[i] = shiftedState[i];
 	}
 }
@@ -57,7 +58,7 @@ void shiftRows(std::array<unsigned char, 16>& state) {
 	@return none
 */
 void mixColumns(std::array<unsigned char, 16>& state) {
-	std::array<unsigned char, NUM_BYTES> tmp;
+	std::array<unsigned char, 16> tmp;
 
 	for (std::size_t i = 0; i < 4; i++) {
 		tmp[4 * i] = galoisFieldMult(0x02, state[i * 4]) ^ galoisFieldMult(0x03, state[i * 4 + 1]) ^ state[i * 4 + 2] ^ state[i * 4 + 3];
@@ -67,7 +68,7 @@ void mixColumns(std::array<unsigned char, 16>& state) {
 	}
 
 	//Replace the state array with the mixed bytes
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
+	for (std::size_t i = 0; i < 16; i++) {
 		state[i] = tmp[i];
 	}
 }
@@ -115,17 +116,17 @@ void encrypt(std::array<unsigned char, 16>& input, std::array<unsigned char, 16>
 	}
 }
 
-int main() {
-  const std::vector<unsigned char> key = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-  };
-  std::array<unsigned char, 16> output;
-  std::array<unsigned char, 16> input = {
-    0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
-  };
-  encrypt(input, output, key);
-  for (int i=0; i<16; i++) {
-    std::cout << std::hex << (int) output[i];
-    std::cout << " ";
-  }
-}
+// int main() {
+//   const std::vector<unsigned char> key = {
+//     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+//   };
+//   std::array<unsigned char, 16> output;
+//   std::array<unsigned char, 16> input = {
+//     0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
+//   };
+//   encrypt(input, output, key);
+//   for (int i=0; i<16; i++) {
+//     std::cout << std::hex << (int) output[i];
+//     std::cout << " ";
+//   }
+// }

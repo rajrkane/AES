@@ -6,8 +6,8 @@
 #include <array>
 
 void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key);
-void invSubBytes(unsigned char* state);
-void invShiftRows(unsigned char* state);
-void invMixColumns(unsigned char* state);
+void invSubBytes(std::array<unsigned char, 16>& state);
+void invShiftRows(std::array<unsigned char, 16>& state);
+void invMixColumns(std::array<unsigned char, 16>& state);
 
 #endif
