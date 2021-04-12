@@ -95,29 +95,21 @@ void encrypt(std::array<unsigned char, 16> &input, std::array<unsigned char, 16>
 
 	// Intial Round
 	addRoundKey(state, &(expandedKey[0]));
-	//printstate(state);
 	
 	int numRounds = keysize/4 + 6;
 
 	for (int i = 0; i < numRounds-1; i++) {
 		subBytes(state);
-		//printstate(state);
 		shiftRows(state);
-		//printstate(state);
 		mixColumns(state);
-		//printstate(state);
 		//The key index is supposed to be 4 * roundNum but since the key is bytes, its 4*4*roundNum
 		addRoundKey(state, &(expandedKey[16*(i+1)]));
-		//printstate(state);
 	}
 
 	// Final Round - No MixedColumns
 	subBytes(state);
-	//printstate(state);
 	shiftRows(state);
-	//printstate(state);
 	addRoundKey(state, &(expandedKey[16*numRounds]));
-	// printstate(state);
 
 	for (int i = 0; i < NUM_BYTES; i++) {
 		output[i] = state[i];

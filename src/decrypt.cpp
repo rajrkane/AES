@@ -94,36 +94,26 @@ void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>&
   for (int i = 0; i < NUM_BYTES; i++) {
     state[i] = input[i];
   }
-  // printstate(state);
 
   unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
   keyExpansion(key, expandedKey, keysize);
   int numRounds = keysize/4 + 6;
-  // printstate(key);
 
   // Initial round
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
-  // printstate(state);
 
   // Rounds
   for (int round = numRounds-1; round > 0; round--){
     invShiftRows(state);
-    // printstate(state);
     invSubBytes(state);
-    // printstate(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
-    // printstate(state);
     invMixColumns(state);
-    // printstate(state);
   }
 
   // Final round
   invShiftRows(state);
-  // printstate(state);
   invSubBytes(state);
-  // printstate(state);
   addRoundKey(state, &(expandedKey[0]));
-  // printstate(state);
 
   // Set output to state
   for (int i = 0; i < NUM_BYTES; i++) {
