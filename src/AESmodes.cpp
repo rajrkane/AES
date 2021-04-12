@@ -52,17 +52,17 @@ void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned c
   plaintext = input;
 
   // TODO: ECB and CBC both repeat this code for padding. Cleaner for padding to have its own function
-  for (int i = 0; i < padLength; i++) {
+  for (std::size_t i = 0; i < padLength; i++) {
     // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
     plaintext[inputSize+i] = padLength;
   }
 
   // Loop over number of blocks
-  for (int i = 0; i < plaintextLength / 16; i++) {
+  for (std::size_t i = 0; i < plaintextLength / 16; i++) {
 
     // Loop over block size and fill each block
     std::array<unsigned char, 16> block;
-    for (int j = 0; j < 16; j++) {
+    for (std::size_t j = 0; j < 16; j++) {
       block[j] = plaintext[j+(i*16)]; 
     }
 
@@ -71,7 +71,7 @@ void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned c
     encrypt(block, outputBlock, key); // TODO: this is sequential, and could be parallelized
 
     // Copy encrypted block to the output
-    for (int j = 0; j < 16; j++) {
+    for (std::size_t j = 0; j < 16; j++) {
       output.push_back(outputBlock[j]);
     }
   }
@@ -116,7 +116,6 @@ void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& 
 }
 
 
-
 /**
   Cipher with CBC mode
   @param input: vector of hex values representing plaintext
@@ -137,29 +136,29 @@ void encrypt_cbc(const std::vector<unsigned char>& input, std::vector<unsigned c
   plaintext = input;
 
   // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack) 
-  for (int i = 0; i < padLength; i++) {
+  for (std::size_t i = 0; i < padLength; i++) {
     // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
     plaintext[inputSize+i] = padLength;
   }
 
   // Encrypt the first block
   std::array<unsigned char, 16> block;
-  for (int j = 0; j < 16; j++) {
+  for (std::size_t j = 0; j < 16; j++) {
     block[j] = plaintext[j] ^ IV[j]; 
   }
 
   std::array<unsigned char, 16> outputBlock;
   encrypt(block, outputBlock, key);
 
-  for (int j = 0; j < 16; j++) {
+  for (std::size_t j = 0; j < 16; j++) {
     output.push_back(outputBlock[j]);
   }
 
   // Loop over the number of subsequent blocks
-  for (int i = 1; i < plaintextLength / 16; i++) {
+  for (std::size_t i = 1; i < plaintextLength / 16; i++) {
     // Loop over block size and fill each block
     std::array<unsigned char, 16> block;
-    for (int j = 0; j < 16; j++) {
+    for (std::size_t j = 0; j < 16; j++) {
       block[j] = plaintext[j+(i*16)] ^ output[j+((i-1)*16)] ;
     }
 
@@ -168,7 +167,7 @@ void encrypt_cbc(const std::vector<unsigned char>& input, std::vector<unsigned c
     encrypt(block, outputBlock, key);
 
     // Copy encrypted block to the output
-    for (int j = 0; j < 16; j++) {
+    for (std::size_t j = 0; j < 16; j++) {
       output.push_back(outputBlock[j]);
     }
   }
@@ -248,19 +247,19 @@ int main() {
   // encrypt_ecb(input, output, key);
 
   // UNCOMMENT BELOW TO TEST DECRYPT_ECB
-  std::vector<unsigned char> input = { // vector, not array, because pad leads to variable sizes that are multiples of 16
-    0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a, 
-    0x95, 0x4f, 0x64, 0xf2, 0xe4, 0xe8, 0x6e, 0x9e, 0xee, 0x82, 0xd2, 0x02, 0x16, 0x68, 0x48, 0x99 
-  };
-  decrypt_ecb(input, output, key);
+  // std::vector<unsigned char> input = { // vector, not array, because pad leads to variable sizes that are multiples of 16
+  //   0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a, 
+  //   0x95, 0x4f, 0x64, 0xf2, 0xe4, 0xe8, 0x6e, 0x9e, 0xee, 0x82, 0xd2, 0x02, 0x16, 0x68, 0x48, 0x99 
+  // };
+  // decrypt_ecb(input, output, key);
 
   ///////////////////////////////////////
 
   // UNCOMMENT BELOW TO TEST ENCRYPT_CBC
-  // std::vector<unsigned char> input = {
-  //   0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
-  // }; // ENCRYPT TEST INPUT #1
-  // encrypt_cbc(input, output, key, IV);
+  std::vector<unsigned char> input = {
+    0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
+  }; // ENCRYPT TEST INPUT #1
+  encrypt_cbc(input, output, key, IV);
 
   // UNCOMMENT BELOW TO TEST DECRYPT_CBC
   // std::vector<unsigned char> input = { // vector, not array, because pad leads to variable sizes that are multiples of 16
