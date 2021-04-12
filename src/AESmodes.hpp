@@ -7,6 +7,8 @@
 #include "decrypt.hpp"
 #include <vector>
 
+bool remove_padding(std::vector<unsigned char>& input);
+
 void encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
                  const std::vector<unsigned char> &key);
 

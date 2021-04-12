@@ -32,6 +32,24 @@ void printDecryptOutput(std::vector<unsigned char> &output) {
     std::cout << std::endl;
 }
 
+bool remove_padding(std::vector<unsigned char>& input)
+{
+    const int lastByte = (int) input.back();
+    //Only continue if the last byte is in the valid range
+    if (lastByte <= NUM_BYTES) {
+        //Verify that the padding is okay
+        for (std::size_t i = 0; i < lastByte; i++) {
+            if (input[input.size() - i - 1] != lastByte)
+                //Do nothing and return
+                return false;
+        }
+        input.erase(input.end() - lastByte, input.end());
+        return true;
+    }
+    //If an improper padding value was given, also do nothing
+    //TODO: I don't know for sure if this resolves the padding oracle attack, I'll look into it some more
+    return false;
+}
 
 /**
   Cipher with ECB mode
@@ -111,8 +129,15 @@ void decrypt_ecb(std::vector<unsigned char> &input, std::vector<unsigned char> &
         }
     }
 
-    const int lastByte = (int) output.back();
-    output.erase(output.end() - lastByte, output.end()); // Padding value is also the padding length
+//    const int lastByte = (int) output.back();
+//    output.erase(output.end() - lastByte, output.end()); // Padding value is also the padding length
+
+    if(!remove_padding(output))
+    {
+        std::cout << "Error" << std::endl;
+        //Erase the output to avoid any other information leaking
+        output.erase(output.begin(), output.end());
+    }
 
     printDecryptOutput(output);
 }
@@ -227,8 +252,12 @@ void decrypt_cbc(std::vector<unsigned char> &input, std::vector<unsigned char> &
 
 
     // Remove padding
-    const int lastByte = (int) output.back();
-    output.erase(output.end() - lastByte, output.end());
+    if(!remove_padding(output))
+    {
+        std::cout << "Error" << std::endl;
+        //Erase the output to avoid any other information leaking
+        output.erase(output.begin(), output.end());
+    }
 
     printDecryptOutput(output);
 }
@@ -332,8 +361,119 @@ void decrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
     }
 
     // Remove padding
-    const int lastByte = (int) output.back();
-    output.erase(output.end() - lastByte, output.end());
+    if(!remove_padding(output))
+    {
+        std::cout << "Error" << std::endl;
+        //Erase the output to avoid any other information leaking
+        output.erase(output.begin(), output.end());
+    }
+
+    printDecryptOutput(output);
+}
+
+/**
+  Cipher with CFB128 mode
+  @param input: vector of hex values representing plaintext
+  @param output: vector of hex values representing (padded) ciphertext
+  @param key: vector of hex values representing key to use
+  @param IV: initialization vector to use
+  @return none
+*/
+void encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) {
+    // Calculate padding length, then copy input array and padding into plaintext
+    const std::size_t inputSize = input.size();
+    const std::size_t padLength = 16 - (inputSize % 16);
+    const std::size_t plaintextLength = inputSize + padLength;
+
+    // Plaintext accomodates both the input and the necessary padding
+    std::vector<unsigned char> plaintext;
+    plaintext.reserve(plaintextLength);
+    plaintext = input;
+
+    // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
+    for (std::size_t i = 0; i < padLength; i++) {
+        // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
+        plaintext[inputSize + i] = padLength;
+    }
+
+    // Encrypt the first block
+    std::array<unsigned char, 16> block;
+    std::array<unsigned char, 16> outputBlock;
+
+    std::copy(IV.begin(), IV.end(), block.begin());
+
+    encrypt(block, outputBlock, key);
+
+    for (std::size_t j = 0; j < 16; j++) {
+        output.push_back(outputBlock[j] ^ plaintext[j]);
+    }
+
+    // Loop over the number of subsequent blocks
+    for (std::size_t i = 1; i < plaintextLength / 16; i++) {
+        // Loop over block size and fill each block
+        for (std::size_t j = 0; j < 16; j++) {
+            block[j] = output[j + ((i - 1) * 16)];
+        }
+
+        // Encrypt each block
+        encrypt(block, outputBlock, key);
+
+        // Copy encrypted block to the output
+        for (std::size_t j = 0; j < 16; j++) {
+            output.push_back(outputBlock[j] ^ plaintext[j + (i*16)]);
+        }
+    }
+
+    printEncryptOutput(output);
+}
+
+/**
+  Inverse cipher with CFB128 mode
+  @param input: vector of hex values representing (padded) ciphertext
+  @param output: vector of hex values representing plaintext (without padding)
+  @param key: vector of hex values representing key to use
+  @param IV: initialization vector to use
+  @return none
+*/
+void decrypt_cfb(std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) {
+    const std::size_t inputSize = input.size();
+
+    // Encrypt the first block
+    std::array<unsigned char, 16> block;
+    std::array<unsigned char, 16> outputBlock;
+
+    std::copy(IV.begin(), IV.end(), block.begin());
+
+    encrypt(block, outputBlock, key);
+
+    for (std::size_t j = 0; j < 16; j++) {
+        output.push_back(outputBlock[j] ^ input[j]);
+    }
+
+    // Loop over the number of subsequent blocks
+    for (std::size_t i = 1; i < inputSize / 16; i++) {
+        // Loop over block size and fill each block
+        for (std::size_t j = 0; j < 16; j++) {
+            block[j] = input[j + ((i - 1) * 16)];
+        }
+
+        // Encrypt each block
+        encrypt(block, outputBlock, key);
+
+        // Copy encrypted block to the output
+        for (std::size_t j = 0; j < 16; j++) {
+            output.push_back(outputBlock[j] ^ input[j + (i*16)]);
+        }
+    }
+    // Remove padding
+    if(!remove_padding(output))
+    {
+        std::cout << "Error" << std::endl;
+        //Erase the output to avoid any other information leaking
+        output.erase(output.begin(), output.end());
+    }
 
     printDecryptOutput(output);
 }
@@ -341,19 +481,19 @@ void decrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
 // TODO: input, output, key, should be set in main file and passed to each AES___.cpp file
 int main() {
     // TODO: hardcoding IV=key here temporarily, but the IV and key should really be taken independently from AESRand
-//  const std::array<unsigned char, NUM_BYTES> IV = {
-//    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-//  };
-    const std::vector<unsigned char> key = {
-            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-    };
+  const std::vector<unsigned char> IV = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+  };
+//    const std::vector<unsigned char> key = {
+//            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+//    };
 
-    const std::array<unsigned char, NUM_BYTES / 2> IV = {
-            0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7
-    };
-//  const std::vector<unsigned char> key = {
-//    0x2b,0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
-//  };
+//    const std::vector<unsigned char> IV = {
+//            0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7
+//    };
+  const std::vector<unsigned char> key = {
+    0x2b,0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
+  };
     std::vector<unsigned char> output;
 
     // UNCOMMENT BELOW TO TEST ENCRYPT_ECB
@@ -379,13 +519,13 @@ int main() {
 
     // UNCOMMENT BELOW TO TEST DECRYPT_CBC
     std::vector<unsigned char> input = { // vector, not array, because pad leads to variable sizes that are multiples of 16
-            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
+            0x6b,0xc1,0xbe,0xe2,0x2e,0x40,0x9f,0x96,0xe9,0x3d,0x7e,0x11,0x73,0x93,0x17,0x2a
     };
     // decrypt_cbc(input, output, key, IV);
 
-    encrypt_ctr(input, output, key, IV);
+    encrypt_cfb(input, output, key, IV);
 
     input.clear();
 
-    decrypt_ctr(output, input, key, IV);
+    decrypt_cfb(output, input, key, IV);
 }
