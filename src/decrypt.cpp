@@ -10,8 +10,8 @@
   @param state: state array to modify
   @return none
 */
-void invShiftRows(std::array<unsigned char, 16>& state) {
-  std::array<unsigned char, 16> shiftedState;
+void invShiftRows(std::array<unsigned char, NUM_BYTES>& state) {
+  std::array<unsigned char, NUM_BYTES> shiftedState;
 
   // Row 1 - Bytes remain unchanged
   shiftedState[0] = state[0];
@@ -37,7 +37,7 @@ void invShiftRows(std::array<unsigned char, 16>& state) {
   shiftedState[11] = state[15];
   shiftedState[15] = state[3];
 
-  for (std::size_t i = 0; i < 16; i++) {
+  for (std::size_t i = 0; i < NUM_BYTES; i++) {
     state[i] = shiftedState[i];
   }
 }
@@ -48,8 +48,8 @@ void invShiftRows(std::array<unsigned char, 16>& state) {
   @param state: state array to modify
   @return none
 */
-void invSubBytes(std::array<unsigned char, 16>& state) {
-  for (std::size_t i = 0; i < 16; i++) {
+void invSubBytes(std::array<unsigned char, NUM_BYTES>& state) {
+  for (std::size_t i = 0; i < NUM_BYTES; i++) {
     state[i] = invGetSboxValue(state[i]);
   }
 }
@@ -60,8 +60,8 @@ void invSubBytes(std::array<unsigned char, 16>& state) {
   @param state: state array to modify
   @return none
 */
-void invMixColumns(std::array<unsigned char, 16>& state) {
-  std::array<unsigned char, 16> tmp;
+void invMixColumns(std::array<unsigned char, NUM_BYTES>& state) {
+  std::array<unsigned char, NUM_BYTES> tmp;
 
 	for (std::size_t i = 0; i < 4; i++) {
 		tmp[4 * i] = galoisFieldMult(0x0e, state[i * 4]) ^ galoisFieldMult(0x0b, state[i * 4 + 1]) ^ galoisFieldMult(0x0d, state[i * 4 + 2]) ^ galoisFieldMult(0x09, state[i * 4 + 3]);
@@ -70,7 +70,7 @@ void invMixColumns(std::array<unsigned char, 16>& state) {
 		tmp[4 * i + 3] = galoisFieldMult(0x0b, state[i * 4]) ^ galoisFieldMult(0x0d, state[i * 4 + 1]) ^ galoisFieldMult(0x09, state[i * 4 + 2]) ^ galoisFieldMult(0x0e, state[i * 4 + 3]);
 	}
 
-	for (std::size_t i = 0; i < 16; i++) {
+	for (std::size_t i = 0; i < NUM_BYTES; i++) {
 		state[i] = tmp[i];
 	}
 }
@@ -86,8 +86,8 @@ void invMixColumns(std::array<unsigned char, 16>& state) {
 */
 void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
   // Create the state array from input
-  std::array<unsigned char, 16> state;
-  for (std::size_t i = 0; i < 16; i++) {
+  std::array<unsigned char, NUM_BYTES> state;
+  for (std::size_t i = 0; i < NUM_BYTES; i++) {
     state[i] = input[i];
   }
 
@@ -99,7 +99,7 @@ void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>&
 	keyExpansion(key, expandedKey, keysize);
 
   // Initial round
-  addRoundKey(state, &(expandedKey[numRounds*16]));
+  addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
 
   // Rounds
   for (std::size_t round = numRounds-1; round > 0; round--){

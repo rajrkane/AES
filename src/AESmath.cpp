@@ -114,11 +114,11 @@ void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned ch
 	}
 }
 
-// XOR each byte of state and key
 /**
-  Computes inverse sbox value.
-  @param index: byte of state array whose value to compute
-  @return inverse sbox value of index
+  XORs each byte of the state array with the key.
+  @param state: the state array to modify
+  @param key: vector of hex values representing the key
+  @return none
 */
 void addRoundKey(std::array<unsigned char, 16>& state, unsigned char* key) {
 	for (int i = 0; i < NUM_BYTES; i++) {

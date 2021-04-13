@@ -6,6 +6,7 @@ Prototypes common to encryption and decryption */
 #include <array>
 #include <vector>
 
+// State size
 #define NUM_BYTES 16
 
 unsigned char galoisFieldMult(unsigned char a, unsigned char b);
