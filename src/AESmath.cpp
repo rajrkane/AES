@@ -1,10 +1,12 @@
+/**
+  @file AESmath.cpp: Math and common functions to encryption and decryption
+*/
 #include "AESmath.hpp"
 
-//From Appendix A of the AES spec
-//This is the first byte of the rcon word array which is x^(i-1) in GF(2^8)
-unsigned char rcon1_i_bytes[11] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36 };
+// From Appendix A of the AES spec
+// This is the first byte of the rcon word array which is x^(i-1) in GF(2^8)
+std::array<unsigned char, 11> rcon1_i_bytes = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36 };
 
-//Common functions to Encryption and Decryption
 
 /**
   Multiplies a by b in GF(2^8) 
@@ -31,6 +33,7 @@ unsigned char galoisFieldMult(unsigned char a, unsigned char b) {
 	return product;
 }
 
+
 /**
   Computes the mutiplicative inverse of the polynomial a in GF(2^8)
   @param a: the polynomial to find the inverse of
@@ -39,16 +42,16 @@ unsigned char galoisFieldMult(unsigned char a, unsigned char b) {
 unsigned char galoisFieldInv(unsigned char a) {
 	unsigned char product = a;
 
-	//The inverse in GF(2^8) is really x^(255-1)
-	//This is 253 iterations because the product is already a or a^1
-	//This is really slow
-	//TODO: Find a faster, constant time method
+	// The inverse in GF(2^8) is really x^(255-1)
+	// This is 253 iterations because the product is already a or a^1
+	// TODO: Find a faster, constant time method
 	for (int i = 0; i < 253; i++) {
 		product = galoisFieldMult(product, a);
 	}
 
 	return product;
 }
+
 
 /**
   Computes the AES key expansion
@@ -59,12 +62,11 @@ unsigned char galoisFieldInv(unsigned char a) {
   				  Note: the key should be 16, 24, or 32 bytes large
   @return none
 */
-void keyExpansion(const std::vector<unsigned char>& key, unsigned char* expansion, unsigned char keysize) {
-
+void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned char>&  expansion, unsigned char keysize) {
 	int Nk = keysize / 4;
 	int Nr = (Nk + 6);
 
-	for (int i = 0 ; i < keysize; i++) {
+	for (std::size_t i = 0 ; i < keysize; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		expansion[i] = key[i];
 	}
 
@@ -72,9 +74,7 @@ void keyExpansion(const std::vector<unsigned char>& key, unsigned char* expansio
 
 	// i < Nb * (Nr + 1)
 	//The number of bytes in a word is 4
-	for(int i = Nk; i < (4 * (Nr + 1)); i++) {
-		//std::cout << i << " ";
-
+	for(std::size_t i = Nk; i < (4 * (Nr + 1)); i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		temp[0] = expansion[(4 * (i - 1))];
 		temp[1] = expansion[(4 * (i - 1)) + 1];
 		temp[2] = expansion[(4 * (i - 1)) + 2];
@@ -114,17 +114,19 @@ void keyExpansion(const std::vector<unsigned char>& key, unsigned char* expansio
 	}
 }
 
-// XOR each byte of state and key
+
 /**
-  Computes inverse sbox value.
-  @param index: byte of state array whose value to compute
-  @return inverse sbox value of index
+  XORs each byte of the state array with the key.
+  @param state: the state array to modify
+  @param key: vector of hex values representing the key
+  @return none
 */
-void addRoundKey(unsigned char* state, unsigned char* key) {
-	for (int i = 0; i < NUM_BYTES; i++) {
+void addRoundKey(std::array<unsigned char, 16>& state, unsigned char* key) {
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		state[i] = state[i] ^ key[i];
 	}
 }
+
 
 /**
   Computes inverse sbox value.
@@ -153,6 +155,7 @@ unsigned char getSboxValue(unsigned char index) {
 
 	return out ^ 0x63;
 }
+
 
 /**
   Computes inverse sbox value.

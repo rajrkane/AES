@@ -7,7 +7,8 @@
 #include "decrypt.hpp"
 #include <vector>
 
-void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key);
+// Secure coding: DCL52-CPP. Never qualify a reference type with const or volatile
+void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key); 
 void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key);
 
 void encrypt_cbc(const std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key, const std::vector<unsigned char>& IV);
