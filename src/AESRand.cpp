@@ -3,6 +3,8 @@
 #include "AESRand.hpp"
 #include "encrypt.hpp"
 
+// Secure coding: MSC50-CPP. Do not use std::rand() for generating pseudorandom numbers
+
 /**
   AESRand constructor
 

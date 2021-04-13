@@ -42,28 +42,29 @@ void printDecryptOutput(std::vector<unsigned char>& output) {
 */
 void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key) {  
   // Calculate padding length, then copy input array and padding into plaintext
+  // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
   const std::size_t inputSize = input.size();
   const std::size_t padLength = 16 - (inputSize % 16);
   const std::size_t plaintextLength = inputSize + padLength;
 
   // Plaintext accomodates both the input and the necessary padding
   std::vector<unsigned char> plaintext;
-  plaintext.reserve(plaintextLength);
-  plaintext = input;
+  plaintext.reserve(plaintextLength); 
+  plaintext = input; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 
   // TODO: ECB and CBC both repeat this code for padding. Cleaner for padding to have its own function
-  for (std::size_t i = 0; i < padLength; i++) {
+  for (std::size_t i = 0; i < padLength; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
     // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
-    plaintext[inputSize+i] = padLength;
+    plaintext[inputSize+i] = padLength; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
 
   // Loop over number of blocks
-  for (std::size_t i = 0; i < plaintextLength / 16; i++) {
+  for (std::size_t i = 0; i < plaintextLength / 16; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 
     // Loop over block size and fill each block
     std::array<unsigned char, 16> block;
-    for (std::size_t j = 0; j < 16; j++) {
-      block[j] = plaintext[j+(i*16)]; 
+    for (std::size_t j = 0; j < 16; j++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+      block[j] = plaintext[j+(i*16)];  // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
     }
 
     // Encrypt each block
@@ -71,8 +72,8 @@ void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned c
     encrypt(block, outputBlock, key); // TODO: this is sequential, and could be parallelized
 
     // Copy encrypted block to the output
-    for (std::size_t j = 0; j < 16; j++) {
-      output.push_back(outputBlock[j]);
+    for (std::size_t j = 0; j < 16; j++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+      output.push_back(outputBlock[j]); 
     }
   }
 
@@ -88,15 +89,15 @@ void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned c
   @return none
 */
 void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key) {
-  const std::size_t inputSize = input.size(); 
+  const std::size_t inputSize = input.size(); // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 
   // Loop over number of blocks
-  for (std::size_t i = 0; i < inputSize / 16; i++) {
+  for (std::size_t i = 0; i < inputSize / 16; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 
     // Loop over block size and fill each block
     std::array<unsigned char, 16> block;
-    for (std::size_t j = 0; j < 16; j++) {
-      block[j] = input[j+(i*16)];
+    for (std::size_t j = 0; j < 16; j++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+      block[j] = input[j+(i*16)]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
     }
 
     // Decrypt each block
@@ -104,13 +105,14 @@ void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& 
     decrypt(block, outputPadded, key);
 
     // Copy decrypted block to the output
-    for (std::size_t j = 0; j < 16; j++) {
-      output.push_back(outputPadded[j]);
+    for (std::size_t j = 0; j < 16; j++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+      output.push_back(outputPadded[j]); 
     }
   }
 
+  // Padding value is also the padding length 
   const int lastByte = (int) output.back();
-  output.erase(output.end() - lastByte, output.end()); // Padding value is also the padding length
+  output.erase(output.end() - lastByte, output.end()); 
 
   printDecryptOutput(output);
 }
@@ -132,13 +134,13 @@ void encrypt_cbc(const std::vector<unsigned char>& input, std::vector<unsigned c
 
   // Plaintext accomodates both the input and the necessary padding
   std::vector<unsigned char> plaintext;
-  plaintext.reserve(plaintextLength);
-  plaintext = input;
+  plaintext.reserve(plaintextLength); 
+  plaintext = input; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 
   // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack) 
   for (std::size_t i = 0; i < padLength; i++) {
     // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
-    plaintext[inputSize+i] = padLength;
+    plaintext[inputSize+i] = padLength; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
 
   // Encrypt the first block
@@ -151,7 +153,7 @@ void encrypt_cbc(const std::vector<unsigned char>& input, std::vector<unsigned c
   encrypt(block, outputBlock, key);
 
   for (std::size_t j = 0; j < 16; j++) {
-    output.push_back(outputBlock[j]);
+    output.push_back(outputBlock[j]); 
   }
 
   // Loop over the number of subsequent blocks
@@ -168,7 +170,7 @@ void encrypt_cbc(const std::vector<unsigned char>& input, std::vector<unsigned c
 
     // Copy encrypted block to the output
     for (std::size_t j = 0; j < 16; j++) {
-      output.push_back(outputBlock[j]);
+      output.push_back(outputBlock[j]); 
     }
   }
 
@@ -190,7 +192,7 @@ void decrypt_cbc(std::vector<unsigned char>& input, std::vector<unsigned char>& 
   // Decrypt the first block
   std::array<unsigned char, 16> block;
   for (std::size_t i = 0; i < 16; i++) {
-    block[i] = input[i];
+    block[i] = input[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
 
   std::array<unsigned char, 16> outputPadded;
@@ -198,7 +200,7 @@ void decrypt_cbc(std::vector<unsigned char>& input, std::vector<unsigned char>& 
 
   for (std::size_t i = 0; i < 16; i++) {
     outputPadded[i] ^= IV[i];
-    output.push_back(outputPadded[i]);
+    output.push_back(outputPadded[i]); 
   }
 
   // Loop over the number of subsequent blocks
@@ -217,13 +219,13 @@ void decrypt_cbc(std::vector<unsigned char>& input, std::vector<unsigned char>& 
     // Copy decrypted block to the output
     for (std::size_t j = 0; j < 16; j++) {
       outputPadded[j] ^= input[j+((i-1)*16)];
-      output.push_back(outputPadded[j]);
+      output.push_back(outputPadded[j]); 
     }
   }
 
   // Remove padding
   const int lastByte = (int) output.back();
-  output.erase(output.end() - lastByte, output.end());
+  output.erase(output.end() - lastByte, output.end()); 
 
   printDecryptOutput(output);
 }

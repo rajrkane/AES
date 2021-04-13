@@ -1,6 +1,5 @@
 /**
-  @file decrypt.cpp
-  Implementation of inverse cipher for AES-128 algorithm
+  @file decrypt.cpp: Inverse cipher implementation
 */
 #include "decrypt.hpp"
 #include <iostream>
@@ -37,8 +36,8 @@ void invShiftRows(std::array<unsigned char, NUM_BYTES>& state) {
   shiftedState[11] = state[15];
   shiftedState[15] = state[3];
 
-  for (std::size_t i = 0; i < NUM_BYTES; i++) {
-    state[i] = shiftedState[i];
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+    state[i] = shiftedState[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
 }
 
@@ -49,7 +48,7 @@ void invShiftRows(std::array<unsigned char, NUM_BYTES>& state) {
   @return none
 */
 void invSubBytes(std::array<unsigned char, NUM_BYTES>& state) {
-  for (std::size_t i = 0; i < NUM_BYTES; i++) {
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
     state[i] = invGetSboxValue(state[i]);
   }
 }
@@ -63,15 +62,15 @@ void invSubBytes(std::array<unsigned char, NUM_BYTES>& state) {
 void invMixColumns(std::array<unsigned char, NUM_BYTES>& state) {
   std::array<unsigned char, NUM_BYTES> tmp;
 
-	for (std::size_t i = 0; i < 4; i++) {
+	for (std::size_t i = 0; i < 4; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		tmp[4 * i] = galoisFieldMult(0x0e, state[i * 4]) ^ galoisFieldMult(0x0b, state[i * 4 + 1]) ^ galoisFieldMult(0x0d, state[i * 4 + 2]) ^ galoisFieldMult(0x09, state[i * 4 + 3]);
 		tmp[4 * i + 1] = galoisFieldMult(0x09, state[i * 4]) ^ galoisFieldMult(0x0e, state[i * 4 + 1]) ^ galoisFieldMult(0x0b, state[i * 4 + 2]) ^ galoisFieldMult(0x0d, state[i * 4 + 3]);
 		tmp[4 * i + 2] = galoisFieldMult(0x0d, state[i * 4]) ^ galoisFieldMult(0x09, state[i * 4 + 1]) ^ galoisFieldMult(0x0e, state[i * 4 + 2]) ^ galoisFieldMult(0x0b, state[i * 4 + 3]);
 		tmp[4 * i + 3] = galoisFieldMult(0x0b, state[i * 4]) ^ galoisFieldMult(0x0d, state[i * 4 + 1]) ^ galoisFieldMult(0x09, state[i * 4 + 2]) ^ galoisFieldMult(0x0e, state[i * 4 + 3]);
 	}
 
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
-		state[i] = tmp[i];
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+		state[i] = tmp[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 	}
 }
 
@@ -87,22 +86,22 @@ void invMixColumns(std::array<unsigned char, NUM_BYTES>& state) {
 void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
   // Create the state array from input
   std::array<unsigned char, NUM_BYTES> state;
-  for (std::size_t i = 0; i < NUM_BYTES; i++) {
-    state[i] = input[i];
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+    state[i] = input[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
 
   // Expand key
   const std::size_t keysize = key.size();
   const std::size_t numRounds = keysize/4 + 6;
   std::vector<unsigned char> expandedKey;
-  expandedKey.reserve(16 * (numRounds + 1));
+  expandedKey.reserve(16 * (numRounds + 1)); 
 	keyExpansion(key, expandedKey, keysize);
 
   // Initial round
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
 
   // Rounds
-  for (std::size_t round = numRounds-1; round > 0; round--){
+  for (std::size_t round = numRounds-1; round > 0; round--){ // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
     invShiftRows(state);
     invSubBytes(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
@@ -115,25 +114,7 @@ void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>&
   addRoundKey(state, &(expandedKey[0]));
 
   // Set output to state
-  for (std::size_t i = 0; i < NUM_BYTES; i++) {
-    output[i] = state[i];
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+    output[i] = state[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
-
-  for (int i=0; i<16;i++) {
-    std::cout << std::hex << (int) output[i];
-    std::cout << " ";
-  }
-}
-
-
-int main() {
-  // Example C.1 in AES specs
-  std::array<unsigned char, 16> input = {
-    0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
-  }; 
-  std::array<unsigned char, 16> output;
-  std::vector<unsigned char> key = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-  };
-  decrypt(input, output, key);
 }

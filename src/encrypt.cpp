@@ -1,4 +1,6 @@
-// encrypt.cpp
+/**
+  @file encrypt.cpp: Cipher implementation
+*/
 #include "encrypt.hpp"
 #include <iostream>
 
@@ -9,7 +11,7 @@
 	@return none
 */
 void subBytes(std::array<unsigned char, NUM_BYTES>& state) {
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		state[i] = getSboxValue(state[i]);
 	}
 }
@@ -47,8 +49,8 @@ void shiftRows(std::array<unsigned char, NUM_BYTES>& state) {
 	shiftedState[15] = state[11];
 
 	//Replace the state array with the shifted bytes
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
-		state[i] = shiftedState[i];
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+		state[i] = shiftedState[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 	}
 }
 
@@ -60,7 +62,7 @@ void shiftRows(std::array<unsigned char, NUM_BYTES>& state) {
 void mixColumns(std::array<unsigned char, NUM_BYTES>& state) {
 	std::array<unsigned char, NUM_BYTES> tmp;
 
-	for (std::size_t i = 0; i < 4; i++) {
+	for (std::size_t i = 0; i < 4; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		tmp[4 * i] = galoisFieldMult(0x02, state[i * 4]) ^ galoisFieldMult(0x03, state[i * 4 + 1]) ^ state[i * 4 + 2] ^ state[i * 4 + 3];
 		tmp[4 * i + 1] = state[i * 4] ^ galoisFieldMult(0x02, state[i * 4 + 1]) ^ galoisFieldMult(0x03, state[i * 4 + 2]) ^ state[i * 4 + 3];
 		tmp[4 * i + 2] = state[i * 4] ^ state[i * 4 + 1] ^ galoisFieldMult(0x02, state[i * 4 + 2]) ^ galoisFieldMult(0x03, state[i * 4 + 3]);
@@ -68,8 +70,8 @@ void mixColumns(std::array<unsigned char, NUM_BYTES>& state) {
 	}
 
 	//Replace the state array with the mixed bytes
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
-		state[i] = tmp[i];
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+		state[i] = tmp[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 	}
 }
 
@@ -84,21 +86,21 @@ void mixColumns(std::array<unsigned char, NUM_BYTES>& state) {
 void encrypt(std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
   // Create the state array from input
   std::array<unsigned char, NUM_BYTES> state;
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
-		state[i] = input[i];
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+		state[i] = input[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 	}
 
   // Expand key
   const std::size_t keysize = key.size();
   const std::size_t numRounds = keysize/4 + 6;
   std::vector<unsigned char> expandedKey;
-  expandedKey.reserve(16 * (numRounds + 1));
+  expandedKey.reserve(16 * (numRounds + 1)); 
 	keyExpansion(key, expandedKey, keysize);
 
 	// Intial Round
 	addRoundKey(state, &(expandedKey[0]));
 
-	for (std::size_t i = 0; i < numRounds-1; i++) {
+	for (std::size_t i = 0; i < numRounds-1; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		subBytes(state);
 		shiftRows(state);
 		mixColumns(state);
@@ -111,22 +113,7 @@ void encrypt(std::array<unsigned char, 16>& input, std::array<unsigned char, 16>
 	shiftRows(state);
 	addRoundKey(state, &(expandedKey[16*numRounds]));
 
-	for (std::size_t i = 0; i < NUM_BYTES; i++) {
-		output[i] = state[i];
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+		output[i] = state[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 	}
-}
-
-int main() {
-  const std::vector<unsigned char> key = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-  };
-  std::array<unsigned char, 16> output;
-  std::array<unsigned char, 16> input = {
-    0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff
-  };
-  encrypt(input, output, key);
-  for (int i=0; i<16; i++) {
-    std::cout << std::hex << (int) output[i];
-    std::cout << " ";
-  }
 }
