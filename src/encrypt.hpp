@@ -2,15 +2,12 @@
 #ifndef ENCRYPT_HPP
 #define ENCRYPT_HPP 
 
-void keyExpansion(unsigned char* key);
+#include "AESmath.hpp"
+#include <array>
+
+void encrypt(std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key);
 void subBytes(unsigned char* state);
 void shiftRows(unsigned char* state);
 void mixColumns(unsigned char* state);
-void addRoundKey(unsigned char* state);
-
-
-
-void encrypt(unsigned char* input, unsigned char* output);
-
 
 #endif
