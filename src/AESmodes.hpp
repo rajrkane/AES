@@ -1,5 +1,5 @@
 // AESmodes.hpp
-#ifndef AES_MODES_HPP  
+#ifndef AES_MODES_HPP
 #define AES_MODES_HPP
 
 #include "AESmath.hpp"
@@ -7,13 +7,42 @@
 #include "decrypt.hpp"
 #include <vector>
 
-void encrypt_ecb(const std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key);
-void decrypt_ecb(std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key);
+bool remove_padding(std::vector<unsigned char> &input) noexcept(false);
 
-void encrypt_cbc(const std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key, const std::vector<unsigned char>& IV);
-void decrypt_cbc(std::vector<unsigned char>& input, std::vector<unsigned char>& output, const std::vector<unsigned char>& key, const std::vector<unsigned char>& IV);
+bool encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key) noexcept(true);
 
-void printEncryptOutput(std::vector<unsigned char>& output);
-void printDecryptOutput(std::vector<unsigned char>& output);
+bool decrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key) noexcept(true);
+
+bool encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) noexcept(true);
+
+bool decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) noexcept(true);
+
+bool encrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key,
+                 const std::array<unsigned char, NUM_BYTES / 2> &nonce) noexcept(true);
+
+bool decrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key,
+                 const std::array<unsigned char, NUM_BYTES / 2> &nonce) noexcept(true);
+
+bool encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) noexcept(true);
+
+bool decrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) noexcept(true);
+
+bool encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) noexcept(true);
+
+bool decrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned char> &output,
+                 const std::vector<unsigned char> &key, const std::vector<unsigned char> &IV) noexcept(true);
+
+void printEncryptOutput(std::vector<unsigned char> &output);
+
+void printDecryptOutput(std::vector<unsigned char> &output);
 
 #endif

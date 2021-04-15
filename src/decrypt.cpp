@@ -1,6 +1,5 @@
 /**
-  @file decrypt.cpp
-  Implementation of inverse cipher for AES-128 algorithm
+  @file decrypt.cpp: Inverse cipher implementation
 */
 #include "decrypt.hpp"
 #include <iostream>
@@ -10,8 +9,8 @@
   @param state: state array to modify
   @return none
 */
-void invShiftRows(unsigned char* state) {
-  unsigned char shiftedState[NUM_BYTES];
+void invShiftRows(std::array<unsigned char, NUM_BYTES>& state) {
+  std::array<unsigned char, NUM_BYTES> shiftedState;
 
   // Row 1 - Bytes remain unchanged
   shiftedState[0] = state[0];
@@ -37,8 +36,8 @@ void invShiftRows(unsigned char* state) {
   shiftedState[11] = state[15];
   shiftedState[15] = state[3];
 
-  for (int i = 0; i < NUM_BYTES; i++) {
-    state[i] = shiftedState[i];
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+    state[i] = shiftedState[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
 }
 
@@ -48,8 +47,8 @@ void invShiftRows(unsigned char* state) {
   @param state: state array to modify
   @return none
 */
-void invSubBytes(unsigned char* state) {
-  for (int i = 0; i < NUM_BYTES; i++) {
+void invSubBytes(std::array<unsigned char, NUM_BYTES>& state) {
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
     state[i] = invGetSboxValue(state[i]);
   }
 }
@@ -60,18 +59,18 @@ void invSubBytes(unsigned char* state) {
   @param state: state array to modify
   @return none
 */
-void invMixColumns(unsigned char* state) {
-  unsigned char tmp[NUM_BYTES];
+void invMixColumns(std::array<unsigned char, NUM_BYTES>& state) {
+  std::array<unsigned char, NUM_BYTES> tmp;
 
-	for (int i = 0; i < 4; i++) {
+	for (std::size_t i = 0; i < 4; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
 		tmp[4 * i] = galoisFieldMult(0x0e, state[i * 4]) ^ galoisFieldMult(0x0b, state[i * 4 + 1]) ^ galoisFieldMult(0x0d, state[i * 4 + 2]) ^ galoisFieldMult(0x09, state[i * 4 + 3]);
 		tmp[4 * i + 1] = galoisFieldMult(0x09, state[i * 4]) ^ galoisFieldMult(0x0e, state[i * 4 + 1]) ^ galoisFieldMult(0x0b, state[i * 4 + 2]) ^ galoisFieldMult(0x0d, state[i * 4 + 3]);
 		tmp[4 * i + 2] = galoisFieldMult(0x0d, state[i * 4]) ^ galoisFieldMult(0x09, state[i * 4 + 1]) ^ galoisFieldMult(0x0e, state[i * 4 + 2]) ^ galoisFieldMult(0x0b, state[i * 4 + 3]);
 		tmp[4 * i + 3] = galoisFieldMult(0x0b, state[i * 4]) ^ galoisFieldMult(0x0d, state[i * 4 + 1]) ^ galoisFieldMult(0x09, state[i * 4 + 2]) ^ galoisFieldMult(0x0e, state[i * 4 + 3]);
 	}
 
-	for (int i = 0; i < NUM_BYTES; i++) {
-		state[i] = tmp[i];
+	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+		state[i] = tmp[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
 	}
 }
 
@@ -84,64 +83,38 @@ void invMixColumns(unsigned char* state) {
   @param keysize: size of the key
   @return none
 */
-// do the input and output parameters need have '&' as follows instead?:
-// std::array<unsigned char, 16>& input, std::array<unsigned char, 16>& output
 void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
-  
-  const int keysize = key.size();
-  unsigned char state[NUM_BYTES];
-
-  for (int i = 0; i < NUM_BYTES; i++) {
-    state[i] = input[i];
+  // Create the state array from input
+  std::array<unsigned char, NUM_BYTES> state;
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+    state[i] = input[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
-  // printstate(state);
 
-  unsigned char* expandedKey = new unsigned char[16 * ((keysize / 4) + 7)];
-  keyExpansion(key, expandedKey, keysize);
-  int numRounds = keysize/4 + 6;
-  // printstate(key);
+  // Expand key
+  const std::size_t keysize = key.size();
+  const std::size_t numRounds = keysize/4 + 6;
+  std::vector<unsigned char> expandedKey;
+  expandedKey.reserve(16 * (numRounds + 1)); 
+	keyExpansion(key, expandedKey, keysize);
 
   // Initial round
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
-  // printstate(state);
 
   // Rounds
-  for (int round = numRounds-1; round > 0; round--){
+  for (std::size_t round = numRounds-1; round > 0; round--){ // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
     invShiftRows(state);
-    // printstate(state);
     invSubBytes(state);
-    // printstate(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
-    // printstate(state);
     invMixColumns(state);
-    // printstate(state);
   }
 
   // Final round
   invShiftRows(state);
-  // printstate(state);
   invSubBytes(state);
-  // printstate(state);
   addRoundKey(state, &(expandedKey[0]));
-  // printstate(state);
 
   // Set output to state
-  for (int i = 0; i < NUM_BYTES; i++) {
-    output[i] = state[i];
+  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+    output[i] = state[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
   }
 }
-
-
-// // TODO: main function is here temporarily for testing. It will be better to have a main file that calls encrypt() and decrypt()
-// int main() {
-//   // Example C.1 in AES specs
-//   unsigned char input[16] = {
-//     0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30, 0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a
-//   }; 
-//   unsigned char output[16];
-//   unsigned char key[16] = {
-//     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f
-//   };
-//   int keysize = 16;
-//   decrypt(input, output, key, keysize);
-// }
