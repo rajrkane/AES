@@ -12,11 +12,11 @@
     @return none
  */
 void printVector(std::vector<unsigned char>& vec) {
-    for(unsigned char c : vec) {
-        if((int) c < 16) {
+    for(std::size_t i = 0; i < vec.size(); i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+        if((int) vec[i] < 16) {
             std::cout << '0';
         }
-        std::cout << std::hex << (int) c << " ";
+        std::cout << std::hex << (int) vec[i] << " ";
     }
     std::cout << std::endl;
 }
@@ -70,7 +70,7 @@ void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsi
     std::vector<unsigned char> vectorNonce;
 
     // Copy elements of array into vector for printing
-    for(std::size_t i = 0; i < nonce.size(); i++) {
+    for(std::size_t i = 0; i < nonce.size(); i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
         vectorNonce.push_back(nonce[i]);
     }
 
@@ -125,8 +125,8 @@ void inputToVector(std::vector<unsigned char>& vec) {
 
 
     // Convert each byte to integer, then store as unsigned char in input vector
-    for (std::size_t i = 0; i < line.size(); i += 2) {
+    for (std::size_t i = 0; i < line.size(); i += 2) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
         unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
-        vec.push_back(byteValue);
+        vec.push_back(byteValue); // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
     }
 }
