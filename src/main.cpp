@@ -14,17 +14,11 @@
 #include "interface.hpp"
 
 
-//void printVector(std::vector<unsigned char>& vec);
-//void printEncryptionResults(std::vector<unsigned char>& input, std::vector<unsigned char>& output, std::vector<unsigned char>& key);
-//void printEncryptionResults(std::vector<unsigned char>& input, std::vector<unsigned char>& output, std::vector<unsigned char>& key, std::vector<unsigned char>& iv);
-//void printDecrpytionResults(std::vector<unsigned char>& output);
-//int getKeySizeInBytes(char* keySize);
-//void inputToVector(std::vector<unsigned char>& vec);
-
-
 // USAGE: ./main [enc, encrypt/ dec, decrypt] [ecb/cbc/cfb/ofb/ctr] [-r/-k/-kf] [128, 192, 256] (-f) (-iv/-nonce)
-// [] - required parameters
+
+// [] - required parameters*
 // () - optional parameters
+// *[-r/-k/-kf] omitted for decryption
 
 int main(int argc, char** argv) {
     AESRand rand;
@@ -39,56 +33,48 @@ int main(int argc, char** argv) {
 
     bool algorithmSuccess;
 
-    if(argc > 4) {
+    if(argc >= 4) {
         char* aes_function = argv[1];
         char* mode = argv[2];
         char* keyType = argv[3];
-        char* keySize = argv[4];
 
-        int keyByteSize = getKeySizeInBytes(keySize);
 
-        // If invalid key size is entered, output error message and terminate program
-        if (keyByteSize == -1) {
-            std::cout << "Invalid parameter for key size.\n";
-            return 2;
-        }
-
-        // Encrypt
-
+        // Encryption
         if (std::strcmp(aes_function, "encrypt") == 0 || std::strcmp(aes_function, "enc") == 0) {
+            char* keySize;
+            int keyByteSize;
+            // Extract key size from command line arguments if proper number of arguments provided
+            if (argc > 4) {
+                keySize = argv[4];
+                // Convert key size to integer value
+                keyByteSize = getKeySizeInBytes(keySize);
+            }
+            else {
+                // Invalid number of arguments to extract key size
+                keyByteSize = -1;
+            }
+
+            // If invalid key size is entered, output error message and terminate program
+            if (keyByteSize == -1) {
+                std::cout << "Invalid parameter for key size.\n";
+                return 2;
+            }
 
             // Receive plaintext to encrypt
             std::cout << "Enter plaintext: ";
 
-            std::getline(std::cin, line);
+            inputToVector(input);
 
-            // Remove spaces from input
-            std::string::iterator end_pos = std::remove(line.begin(), line.end(), ' ');
-            line.erase(end_pos, line.end());
-
-            // Ensure input has length divisible by 2
-            if (line.size() % 2 != 0) {
-                std::cout << "Invalid input!!\n Please ensure that each byte is entered with 2 hex values\n";
-                return 1;
-            }
-
-
-            // Convert each byte to integer, then store as unsigned char in input vector
-            for (std::size_t i = 0; i < line.size(); i += 2) {
-                unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
-                input.push_back(byteValue);
-            }
-
-            // Create random key
-            if(std::strcmp(keyType, "-r") == 0) {
+            // Create random key if -r command line argument is provided
+            if (std::strcmp(keyType, "-r") == 0) {
                 key = rand.generateBytes(keyByteSize);
             }
-            // Receive key from user input
-            else if(std::strcmp(keyType, "-k") == 0) {
+            // Receive key from user input if -k command line argument is provided
+            else if (std::strcmp(keyType, "-k") == 0) {
                 std::cout << "Enter key: ";
                 inputToVector(key);
                 // Check that user entered correct number of bytes for designated key size
-                if(key.size() != keyByteSize) {
+                if (key.size() != keyByteSize) {
                     std::cout << "Invalid number of bytes entered for key.\n";
                     return 2;
                 }
@@ -96,8 +82,13 @@ int main(int argc, char** argv) {
             }
             // Receive file path for key
             // TODO Implement reading key from file
-            else if(std::strcmp(keyType, "-kf") == 0) {
+            else if (std::strcmp(keyType, "-kf") == 0) {
                 std::cout << "Enter file path for key: ";
+            }
+            // If no valid flag is provided, alert user and terminate execution
+            else {
+                std::cout << "Invalid flag entered for key\n";
+                return 2;
             }
 
             // Encrypt with mode entered by user
@@ -110,7 +101,7 @@ int main(int argc, char** argv) {
                 if (!algorithmSuccess)
                     return 3;
 
-                printEncryptionResults(input, output, key);
+                printEncryptionResults(output, key);
             }
             // Encryption with CBC
             else if (std::strcmp(mode, "cbc") == 0 || std::strcmp(mode, "CBC") == 0) {
@@ -128,7 +119,7 @@ int main(int argc, char** argv) {
                 if (!algorithmSuccess)
                     return 3;
 
-                printEncryptionResults(input, output, key, iv);
+                printEncryptionResults(output, key, iv);
             }
             // Encryption with CFB
             else if (std::strcmp(mode, "cfb") == 0 || std::strcmp(mode, "CFB") == 0) {
@@ -147,7 +138,7 @@ int main(int argc, char** argv) {
                 if (!algorithmSuccess)
                     return 3;
 
-                printEncryptionResults(input, output, key, iv);
+                printEncryptionResults(output, key, iv);
             }
             // Encryption with OFB
             else if (std::strcmp(mode, "ofb") == 0 || std::strcmp(mode, "OFB") == 0) {
@@ -165,7 +156,7 @@ int main(int argc, char** argv) {
                 if (!algorithmSuccess)
                     return 3;
 
-                printEncryptionResults(input, output, key, iv);
+                printEncryptionResults(output, key, iv);
             }
             // Encryption with CTR
             else if (std::strcmp(mode, "ctr") == 0 || std::strcmp(mode, "CTR") == 0) {
@@ -178,7 +169,7 @@ int main(int argc, char** argv) {
                     std::cout << "Enter nonce: ";
                     inputToVector(vectorNonce);
 
-                    if(nonce.size() != NUM_BYTES / 2) {
+                    if (vectorNonce.size() != NUM_BYTES / 2) {
                         std::cout << "Invalid number of bytes entered for nonce.\n";
                         return 4;
                     }
@@ -197,38 +188,48 @@ int main(int argc, char** argv) {
                 if (!algorithmSuccess)
                     return 3;
 
-//                // TODO Print out valid format for nonce in CTR mode
-//                printEncryptionResults(input, output, key, nonce);
+                printEncryptionResults(output, key, nonce);
             }
-
-            //printEncryptionResults(input, output, key);
 
         }
 
         // Decrypt functionality
 
-        if(std::strcmp(argv[1], "decrypt") == 0 || std::strcmp(argv[1], "dec") == 0) {
+        if (std::strcmp(argv[1], "decrypt") == 0 || std::strcmp(argv[1], "dec") == 0) {
+            char* keySize = argv[3];
+
+            int keyByteSize = getKeySizeInBytes(keySize);
+
+            // If invalid key size is entered, output error message and terminate program
+            if (keyByteSize == -1) {
+                std::cout << "Invalid parameter for key size.\n";
+                return 2;
+            }
+
+
             // Receive ciphertext to decrypt
             std::cout << "Enter ciphertext: ";
 
-            std::getline(std::cin, line);
-
-            // Remove spaces from input
-            std::string::iterator end_pos = std::remove(line.begin(), line.end(), ' ');
-            line.erase(end_pos, line.end());
-
-            // Ensure input has length divisible by 2
-            if (line.size() % 2 != 0) {
-                std::cout << "Invalid input!!\n Please ensure that each byte is entered with 2 hex values\n";
-                return 1;
-            }
-
-
-            // Convert each byte to integer, then store as unsigned char in input vector
-            for (std::size_t i = 0; i < line.size(); i += 2) {
-                unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
-                input.push_back(byteValue);
-            }
+            inputToVector(input);
+//
+//            std::getline(std::cin, line);
+//
+//            // Remove spaces from input
+//            std::string::iterator end_pos = std::remove(line.begin(), line.end(), ' ');
+//            line.erase(end_pos, line.end());
+//
+//            // Ensure input has length divisible by 2
+//            if (line.size() % 2 != 0) {
+//                std::cout << "Invalid input!!\n Please ensure that each byte is entered with 2 hex values\n";
+//                return 1;
+//            }
+//
+//
+//            // Convert each byte to integer, then store as unsigned char in input vector
+//            for (std::size_t i = 0; i < line.size(); i += 2) {
+//                unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
+//                input.push_back(byteValue);
+//            }
 
             // Receive key
             std::cout << "Enter key: ";
@@ -236,49 +237,98 @@ int main(int argc, char** argv) {
             inputToVector(key);
 
             // Ensure key is right size
-            std::cout << key.size() << std::endl;
             if (key.size() != 16 && key.size() && 24 && key.size() != 32) {
                 std::cout << "Invalid key size!!\n Please enter a valid key\n";
                 return 2;
             }
 
             // Decrypt with mode entered by user
+
+            // Decryption with ECB
             if (std::strcmp(mode, "ecb") == 0 || std::strcmp(mode, "ECB") == 0) {
                 decrypt_ecb(input, output, key);
             }
+            // Decryption with CBC
             else if (std::strcmp(mode, "cbc") == 0 || std::strcmp(mode, "CBC") == 0) {
                 // Receive IV
                 std::cout << "Enter IV: ";
 
-                std::getline(std::cin, line);
+                inputToVector(iv);
+//
+//                std::getline(std::cin, line);
+//
+//                // Remove spaces from input
+//                std::string::iterator end_pos = std::remove(line.begin(), line.end(), ' ');
+//                line.erase(end_pos, line.end());
+//
+//                // Ensure input has length divisible by 2
+//                if (line.size() != 32) {
+//                    std::cout << "Invalid key size!!\n Please enter a valid key\n";
+//                    return 2;
+//                }
+//
+//
+//                // Convert each byte to integer, then store as unsigned char in input vector
+//                for (std::size_t i = 0; i < line.size(); i += 2) {
+//                    unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
+//                    iv.push_back(byteValue);
+//                }
 
-                // Remove spaces from input
-                std::string::iterator end_pos = std::remove(line.begin(), line.end(), ' ');
-                line.erase(end_pos, line.end());
+                 algorithmSuccess = decrypt_cbc(input, output, key, iv);
 
-                // Ensure input has length divisible by 2
-                if (line.size() != 32) {
-                    std::cout << "Invalid key size!!\n Please enter a valid key\n";
-                    return 2;
-                }
+                // Stop execution if encryption is unsuccessful
+                if (!algorithmSuccess)
+                    return 3;
 
-
-                // Convert each byte to integer, then store as unsigned char in input vector
-                for (std::size_t i = 0; i < line.size(); i += 2) {
-                    unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
-                    iv.push_back(byteValue);
-                }
-
-                decrypt_cbc(input, output, key, iv);
             }
+            // Decryption with CFB
             else if (std::strcmp(mode, "cfb") == 0|| std::strcmp(mode, "CFB") == 0) {
-                std::cout << "CFB decryption\n";
+                // Receive IV
+                std::cout << "Enter IV: ";
+                inputToVector(iv);
+
+                algorithmSuccess = decrypt_cfb(input, output, key, iv);
+
+                // Stop execution if encryption is unsuccessful
+                if (!algorithmSuccess)
+                    return 3;
             }
+            // Decryption with OFB
             else if (std::strcmp(mode, "ofb") == 0 || std::strcmp(mode, "OFB") == 0) {
-                std::cout << "OFB decryption\n";
+                // Receive IV
+                std::cout << "Enter IV: ";
+                inputToVector(iv);
+
+                algorithmSuccess = decrypt_ofb(input, output, key, iv);
+
+                // Stop execution if encryption is unsuccessful
+                if (!algorithmSuccess)
+                    return 3;
             }
+            // Decryption with CTR
             else if (std::strcmp(mode, "ctr") == 0 || std::strcmp(mode, "CTR") == 0) {
-                std::cout << "CTR decryption\n";
+                std::array<unsigned char, NUM_BYTES / 2> nonce;
+                std::vector<unsigned char> vectorNonce;
+
+                // Receive nonce of initial counter
+                std::cout << "Enter nonce: ";
+                inputToVector(vectorNonce);
+
+                // Ensure proper number of bytes entered
+                if (vectorNonce.size() != NUM_BYTES / 2) {
+                    std::cout << "Invalid number of bytes entered for nonce.\n";
+                    return 4;
+                }
+
+
+                std::copy(vectorNonce.begin(), vectorNonce.end(), nonce.begin());
+
+                algorithmSuccess = decrypt_ctr(input, output, key, nonce);
+
+                // Stop execution if encryption is unsuccessful
+                if (!algorithmSuccess)
+                    return 3;
+
             }
 
             printDecrpytionResults(output);

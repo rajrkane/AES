@@ -22,42 +22,61 @@ void printVector(std::vector<unsigned char>& vec) {
 }
 
 /**
-    Print the plaintext, ciphertext, and key after an encryption
+    Print the ciphertext, and key after an encryption
     Used for modes that do not require an IV (ECB)
-    @param input: plaintext used as input to encryption
     @param ouput: ciphertext received as output from encryption
     @param key: key used for encryption
     @return none
  */
-void printEncryptionResults(std::vector<unsigned char>& input, std::vector<unsigned char>& output, std::vector<unsigned char>& key) {
-    std::cout << "PLAINTEXT: ";
-    printVector(input);
-    std::cout << "KEY: ";
-    printVector(key);
+void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsigned char>& key) {
     std::cout << "CIPHERTEXT: ";
     printVector(output);
+    std::cout << "KEY: ";
+    printVector(key);
 }
 
 /**
-    Print the plaintext, ciphertext, and key after an encryption
+    Print the ciphertext, key, and IV after an encryption
     Used for modes that require an IV (CBC, CFB, OFB)
-    @param input: plaintext used as input to encryption
     @param ouput: ciphertext received as output from encryption
     @param key: key used for encryption
     @param iv: IV used for encryption in the chosen mode
     @return none
  */
-void printEncryptionResults(std::vector<unsigned char>& input, std::vector<unsigned char>& output, std::vector<unsigned char>& key, std::vector<unsigned char>& iv) {
-    std::cout << "PLAINTEXT: ";
-    printVector(input);
+void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsigned char>& key, std::vector<unsigned char>& iv) {
+    std::cout << "CIPHERTEXT: ";
+    printVector(output);
     std::cout << "KEY: ";
     printVector(key);
     std::cout << "IV: ";
     printVector(iv);
-    std::cout << "CIPHERTEXT: ";
-    printVector(output);
 }
 
+
+/**
+    Print the ciphertext, key, and nonce for initial counter after an encryption
+    Used for CTR
+    @param ouput: ciphertext received as output from encryption
+    @param key: key used for encryption
+    @param nonce: IV used for encryption in the chosen mode
+    @return none
+ */
+void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsigned char>& key, std::array<unsigned char, NUM_BYTES / 2>& nonce) {
+    std::cout << "CIPHERTEXT: ";
+    printVector(output);
+    std::cout << "KEY: ";
+    printVector(key);
+
+    std::vector<unsigned char> vectorNonce;
+
+    // Copy elements of array into vector for printing
+    for(std::size_t i = 0; i < nonce.size(); i++) {
+        vectorNonce.push_back(nonce[i]);
+    }
+
+    std::cout << "NONCE: ";
+    printVector(vectorNonce);
+}
 /**
     Print the recovered plaintext after a decrpytion
     @param ouput: plaintext recovered as output from encryption
