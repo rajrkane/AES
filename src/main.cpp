@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
             inputToVector(key);
 
             // Ensure key is right size
-            if (key.size() != 16 && key.size() && 24 && key.size() != 32) {
+            if (key.size() != 16 && key.size() && != 24 && key.size() != 32) {
                 std::cout << "Invalid key size!!\n Please enter a valid key\n";
                 return 2;
             }
