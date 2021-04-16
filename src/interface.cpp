@@ -29,7 +29,7 @@ void printVector(std::vector<unsigned char>& vec) {
     @return none
  */
 void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsigned char>& key) {
-    std::cout << "CIPHERTEXT: ";
+    std::cout << "\nCIPHERTEXT: ";
     printVector(output);
     std::cout << "KEY: ";
     printVector(key);
@@ -44,7 +44,7 @@ void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsi
     @return none
  */
 void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsigned char>& key, std::vector<unsigned char>& iv) {
-    std::cout << "CIPHERTEXT: ";
+    std::cout << "\nCIPHERTEXT: ";
     printVector(output);
     std::cout << "KEY: ";
     printVector(key);
@@ -62,7 +62,7 @@ void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsi
     @return none
  */
 void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsigned char>& key, std::array<unsigned char, NUM_BYTES / 2>& nonce) {
-    std::cout << "CIPHERTEXT: ";
+    std::cout << "\nCIPHERTEXT: ";
     printVector(output);
     std::cout << "KEY: ";
     printVector(key);
@@ -83,7 +83,7 @@ void printEncryptionResults(std::vector<unsigned char>& output, std::vector<unsi
     @return none
  */
 void printDecrpytionResults(std::vector<unsigned char>&output) {
-    std::cout << "DECRPYTED PLAINTEXT: ";
+    std::cout << "\nDECRPYTED PLAINTEXT: ";
     printVector(output);
 }
 

@@ -14,11 +14,11 @@
 #include "interface.hpp"
 
 
-// USAGE: ./main [enc, encrypt/ dec, decrypt] [ecb/cbc/cfb/ofb/ctr] [-r/-k/-kf] [128, 192, 256] (-f) (-iv/-nonce)
+// USAGE: ./main [enc, encrypt/ dec, decrypt] [ecb/cbc/cfb/ofb/ctr] [-r/-k] [128, 192, 256] (-iv/-nonce)
 
 // [] - required parameters*
 // () - optional parameters
-// *[-r/-k/-kf] omitted for decryption
+// *[-r/-k] omitted for decryption
 
 int main(int argc, char** argv) {
     AESRand rand;
@@ -80,11 +80,6 @@ int main(int argc, char** argv) {
                 }
 
             }
-            // Receive file path for key
-            // TODO Implement reading key from file
-            else if (std::strcmp(keyType, "-kf") == 0) {
-                std::cout << "Enter file path for key: ";
-            }
             // If no valid flag is provided, alert user and terminate execution
             else {
                 std::cout << "Invalid flag entered for key\n";
@@ -106,9 +101,16 @@ int main(int argc, char** argv) {
             // Encryption with CBC
             else if (std::strcmp(mode, "cbc") == 0 || std::strcmp(mode, "CBC") == 0) {
                 // If -iv command line argument is provided, receive value of IV from user
-                if ((argc == 6 && std::strcmp(argv[5], "-iv") == 0) || (argc == 7 && std::strcmp(argv[6], "-iv") == 0)) {
+                if (argc == 6 && std::strcmp(argv[5], "-iv") == 0) {
                     std::cout << "Enter IV: ";
                     inputToVector(iv);
+
+                    // Ensure IV size is correct
+                    if (iv.size() != NUM_BYTES) {
+                        std::cout << "Invalid number of bytes entered for IV\n";
+                        return 2;
+                    }
+
                 }
                 else {
                     iv = rand.generateBytes(IV_SIZE);
@@ -124,9 +126,16 @@ int main(int argc, char** argv) {
             // Encryption with CFB
             else if (std::strcmp(mode, "cfb") == 0 || std::strcmp(mode, "CFB") == 0) {
                 // If -iv command line argument is provided, receive value of IV from user
-                if ((argc == 6 && std::strcmp(argv[5], "-iv") == 0) || (argc == 7 && std::strcmp(argv[6], "-iv") == 0)) {
+                if (argc == 6 && std::strcmp(argv[5], "-iv") == 0) {
                     std::cout << "Enter IV: ";
                     inputToVector(iv);
+
+                    // Ensure IV size is correct
+                    if (iv.size() != NUM_BYTES) {
+                        std::cout << "Invalid number of bytes entered for IV\n";
+                        return 2;
+                    }
+
                 }
                 else {
                     iv = rand.generateBytes(IV_SIZE);
@@ -143,13 +152,21 @@ int main(int argc, char** argv) {
             // Encryption with OFB
             else if (std::strcmp(mode, "ofb") == 0 || std::strcmp(mode, "OFB") == 0) {
                 // If -iv command line argument is provided, receive value of IV from user
-                if ((argc == 6 && std::strcmp(argv[5], "-iv") == 0) || (argc == 7 && std::strcmp(argv[6], "-iv") == 0)) {
+                if (argc == 6 && std::strcmp(argv[5], "-iv") == 0) {
                     std::cout << "Enter IV: ";
                     inputToVector(iv);
+
+                    // Ensure IV size is correct
+                    if (iv.size() != NUM_BYTES) {
+                        std::cout << "Invalid number of bytes entered for IV\n";
+                        return 2;
+                    }
+
                 }
                 else {
                     iv = rand.generateBytes(IV_SIZE);
                 }
+
                 algorithmSuccess = encrypt_ofb(input, output, key, iv);
 
                 // Stop execution if encryption is unsuccessful
@@ -165,7 +182,7 @@ int main(int argc, char** argv) {
 
                 // Set value of nonce
                 // If -nonce command line argument is provided, receive value of nonce from user
-                if ((argc == 6 && std::strcmp(argv[5], "-nonce") == 0) || (argc == 7 && std::strcmp(argv[6], "-nonce") == 0)) {
+                if (argc == 6 && std::strcmp(argv[5], "-nonce") == 0) {
                     std::cout << "Enter nonce: ";
                     inputToVector(vectorNonce);
 
@@ -209,31 +226,10 @@ int main(int argc, char** argv) {
 
             // Receive ciphertext to decrypt
             std::cout << "Enter ciphertext: ";
-
             inputToVector(input);
-//
-//            std::getline(std::cin, line);
-//
-//            // Remove spaces from input
-//            std::string::iterator end_pos = std::remove(line.begin(), line.end(), ' ');
-//            line.erase(end_pos, line.end());
-//
-//            // Ensure input has length divisible by 2
-//            if (line.size() % 2 != 0) {
-//                std::cout << "Invalid input!!\n Please ensure that each byte is entered with 2 hex values\n";
-//                return 1;
-//            }
-//
-//
-//            // Convert each byte to integer, then store as unsigned char in input vector
-//            for (std::size_t i = 0; i < line.size(); i += 2) {
-//                unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
-//                input.push_back(byteValue);
-//            }
 
             // Receive key
             std::cout << "Enter key: ";
-
             inputToVector(key);
 
             // Ensure key is right size
@@ -254,25 +250,12 @@ int main(int argc, char** argv) {
                 std::cout << "Enter IV: ";
 
                 inputToVector(iv);
-//
-//                std::getline(std::cin, line);
-//
-//                // Remove spaces from input
-//                std::string::iterator end_pos = std::remove(line.begin(), line.end(), ' ');
-//                line.erase(end_pos, line.end());
-//
-//                // Ensure input has length divisible by 2
-//                if (line.size() != 32) {
-//                    std::cout << "Invalid key size!!\n Please enter a valid key\n";
-//                    return 2;
-//                }
-//
-//
-//                // Convert each byte to integer, then store as unsigned char in input vector
-//                for (std::size_t i = 0; i < line.size(); i += 2) {
-//                    unsigned char byteValue = (unsigned char) std::stoi(line.substr(i, 2), nullptr, 16);
-//                    iv.push_back(byteValue);
-//                }
+
+                // Ensure IV size is correct
+                if (iv.size() != NUM_BYTES) {
+                    std::cout << "Invalid number of bytes entered for IV\n";
+                    return 2;
+                }
 
                  algorithmSuccess = decrypt_cbc(input, output, key, iv);
 
@@ -287,6 +270,13 @@ int main(int argc, char** argv) {
                 std::cout << "Enter IV: ";
                 inputToVector(iv);
 
+
+                // Ensure IV size is correct
+                if (iv.size() != NUM_BYTES) {
+                    std::cout << "Invalid number of bytes entered for IV\n";
+                    return 2;
+                }
+
                 algorithmSuccess = decrypt_cfb(input, output, key, iv);
 
                 // Stop execution if encryption is unsuccessful
@@ -298,6 +288,13 @@ int main(int argc, char** argv) {
                 // Receive IV
                 std::cout << "Enter IV: ";
                 inputToVector(iv);
+
+
+                // Ensure IV size is correct
+                if (iv.size() != NUM_BYTES) {
+                    std::cout << "Invalid number of bytes entered for IV\n";
+                    return 2;
+                }
 
                 algorithmSuccess = decrypt_ofb(input, output, key, iv);
 
@@ -314,10 +311,10 @@ int main(int argc, char** argv) {
                 std::cout << "Enter nonce: ";
                 inputToVector(vectorNonce);
 
-                // Ensure proper number of bytes entered
+                // Ensure proper number of bytes entered for upper half of initial counter
                 if (vectorNonce.size() != NUM_BYTES / 2) {
                     std::cout << "Invalid number of bytes entered for nonce.\n";
-                    return 4;
+                    return 2;
                 }
 
 
@@ -328,12 +325,10 @@ int main(int argc, char** argv) {
                 // Stop execution if encryption is unsuccessful
                 if (!algorithmSuccess)
                     return 3;
-
             }
 
             printDecrpytionResults(output);
         }
-
     }
 
     return 0;
