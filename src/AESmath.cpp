@@ -44,7 +44,6 @@ unsigned char galoisFieldInv(unsigned char a) {
 
 	// The inverse in GF(2^8) is really x^(255-1)
 	// This is 253 iterations because the product is already a or a^1
-	// TODO: Find a faster, constant time method
 	for (int i = 0; i < 253; i++) {
 		product = galoisFieldMult(product, a);
 	}

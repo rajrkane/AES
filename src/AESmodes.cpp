@@ -19,7 +19,6 @@ bool remove_padding(std::vector<unsigned char> &input) noexcept(false) {
         return true;
     }
     //If an improper padding value was given, also do nothing
-    //TODO: I don't know for sure if this resolves the padding oracle attack, I'll look into it some more
     return false;
 }
 
@@ -52,7 +51,6 @@ bool encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
         plaintext.reserve(plaintextLength);
         plaintext = input;
 
-        // TODO: ECB and CBC both repeat this code for padding. Cleaner for padding to have its own function
         for (std::size_t i = 0; i < padLength; i++) {
             // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
             plaintext.push_back(padLength);
@@ -71,7 +69,7 @@ bool encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Encrypt each block
             std::array<unsigned char, NUM_BYTES> outputBlock{};
-            encrypt(block, outputBlock, key); // TODO: this is sequential, and could be parallelized
+            encrypt(block, outputBlock, key);
 
             // Copy encrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
@@ -179,7 +177,6 @@ bool encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
         plaintext.reserve(plaintextLength);
         plaintext = input;
 
-        // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
         for (std::size_t i = 0; i < padLength; i++) {
             // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
             plaintext.push_back(padLength);
@@ -350,7 +347,6 @@ bool encrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
         plaintext.reserve(plaintextLength);
         plaintext = input;
 
-        // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
         for (std::size_t i = 0; i < padLength; i++) {
             // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
             plaintext.push_back(padLength);
@@ -476,7 +472,6 @@ bool encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
         plaintext.reserve(plaintextLength);
         plaintext = input;
 
-        // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
         for (std::size_t i = 0; i < padLength; i++) {
             // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
             plaintext.push_back(padLength);
@@ -578,7 +573,6 @@ bool decrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
             std::cout << "Decryption Error" << std::endl;
             //Erase the output to avoid any other information leaking
             output.clear();
-            output.clear();
             return false;
         }
 
@@ -619,7 +613,6 @@ bool encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
         plaintext.reserve(plaintextLength);
         plaintext = input;
 
-        // TODO: investigate whether PKCS#7 is the best choice for padding (padding oracle attack)
         for (std::size_t i = 0; i < padLength; i++) {
             // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
             plaintext.push_back(padLength);
