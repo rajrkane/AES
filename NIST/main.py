@@ -23,11 +23,11 @@ def run_test(mode, key, iv, plaintext, expected_out):
     output = proc.stdout.decode('utf-8')
     # Find the position of the ciphertext and remove the unnecessary parts
     idx = output.find("CIPHERTEXT: ")
-    ciphertxt = output[idx + 12: idx + 12 + 95]
+    ciphertxt = output[idx + 12: idx + 12 + int((len(plaintext) + 32)*(3/2))]
     ciphertxt = ciphertxt.replace(" ", "").lower()
     
-    # Compare the first block of the ciphertext since thats all the KAT has
-    if ciphertxt[:32] != expected_out:
+    # Compare the ciphertext
+    if ciphertxt[:len(expected_out)] != expected_out:
     	return False
     	
     # Run it in the reverse direction
@@ -40,12 +40,12 @@ def run_test(mode, key, iv, plaintext, expected_out):
     
     output = proc.stdout.decode('utf-8')
     idx = output.find("DECRPYTED PLAINTEXT: ")
-    ptx = output[idx + 21: idx + 21 + 47]
+    ptx = output[idx + 21: idx + 21 + int((len(plaintext))*(3/2))]
     ptx = ptx.replace(" ", "").lower()
     
     
-    # Compare the plaintext since thats all the KAT has
-    if ptx[:32] != plaintext:
+    # Compare the plaintext
+    if ptx[:len(plaintext)] != plaintext:
     	return False
     
     return True
@@ -98,7 +98,7 @@ def run_test_file(filename):
 
     print("Passed {0} out of {1}".format(num_tests - failed_tests, num_tests))
 
-# Directory containing the Known-Answer-Vectors
+
 testDirectory = "./KAT"
 
 for entry in Path(testDirectory).iterdir():
