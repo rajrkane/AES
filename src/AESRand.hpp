@@ -1,3 +1,6 @@
+/**
+  @file AESrand.hpp: randomness class
+*/
 #ifndef AES_AESRAND_HPP
 #define AES_AESRAND_HPP
 
