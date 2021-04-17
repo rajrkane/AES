@@ -53,7 +53,7 @@ To use:
 
 
 Running tests:
-Included are 2 types of tests provided by the NIST Cryptographic Algorithm Validation Program. This are included in the NIST folder, which is separate from the main AES implementation.
+Included are 2 types of tests provided by the NIST Cryptographic Algorithm Validation Program. These are included in the NIST folder, which is separate from the main AES implementation.
 They are the AES KAT (Known Answer Test) vectors as well as AES MMT (Mulitblock Message Test) vectors. There are tests for ECB, CBC, CFB in 128 bit mode, and OFB.
 For information about CTR mode testing, see the project report, section 2.7 Implementation Validation
 
