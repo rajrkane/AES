@@ -51,6 +51,7 @@ bool encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
         plaintext.reserve(plaintextLength);
         plaintext = input;
 
+
         for (std::size_t i = 0; i < padLength; i++) {
             // PKCS#7 padding (source: https://www.ibm.com/docs/en/zos/2.1.0?topic=rules-pkcs-padding-method)
             plaintext.push_back(padLength);
@@ -69,6 +70,7 @@ bool encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Encrypt each block
             std::array<unsigned char, NUM_BYTES> outputBlock{};
+
             encrypt(block, outputBlock, key);
 
             // Copy encrypted block to the output
