@@ -3,6 +3,9 @@ import subprocess
 from subprocess import PIPE
 from pathlib import Path
 
+total_tests = 0
+total_failed_tests = 0
+
 # Runs a single test through the program
 def run_test(mode, key, iv, plaintext, expected_out):
     # Command to run the executable in encrypt mode
@@ -56,15 +59,18 @@ def run_test_file(filename):
     failed_tests = 0
 
     test_name = os.path.basename(filename)
+    
     # Ignore all of the CFB tests that are not the 128 bit mode
     if test_name.startswith("CFB"):
         if not test_name.startswith("CFB128"):
-            return
+            return (0,0)
 
+    print("Running test: {0}".format(test_name))
+        
     test_name = test_name[:3]
 
     test_file = open(filename, "r", encoding="utf-8", newline='\r\n')
-
+    
     seen_encrypt = False
     while test_file:
         line = test_file.readline()
@@ -97,11 +103,17 @@ def run_test_file(filename):
             num_tests += 1
 
     print("Passed {0} out of {1}".format(num_tests - failed_tests, num_tests))
+    return (num_tests, failed_tests)
 
 
 testDirectory = "./KAT"
 
 for entry in Path(testDirectory).iterdir():
-    print(entry.name)
-    run_test_file(testDirectory + "/" + entry.name)
+    # print(entry.name)
+    (t, f) = run_test_file(testDirectory + "/" + entry.name)
+    total_tests += t
+    total_failed_tests += f
+    
+print("Passed {0} out of {1}".format(total_tests - total_failed_tests, total_tests))
+
 
