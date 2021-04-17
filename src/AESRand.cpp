@@ -1,3 +1,6 @@
+/**
+  @file AESrand.cpp: randomness class
+*/
 #include <random>
 #include <algorithm>
 #include "AESRand.hpp"
