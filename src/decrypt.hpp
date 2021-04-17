@@ -1,4 +1,6 @@
-// decrypt.hpp
+/**
+  @file decrypt.hpp: Prototypes for decryption
+*/
 #ifndef DECRYPT_HPP
 #define DECRYPT_HPP
 
