@@ -1,4 +1,6 @@
-// encrypt.hpp
+/**
+  @file encrypt.hpp: prototypes for encryption
+*/
 #ifndef ENCRYPT_HPP
 #define ENCRYPT_HPP 
 
