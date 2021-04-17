@@ -1,6 +1,6 @@
 /**
   @file AESmodes.cpp
-  Implementation of ECB and CBC modes of operation for AES-128
+  Implementation of modes of operation for AES-128
 */
 #include "AESmodes.hpp"
 #include <iostream>
