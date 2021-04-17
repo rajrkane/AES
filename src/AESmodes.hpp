@@ -1,4 +1,6 @@
-// AESmodes.hpp
+/**
+  @file AESmodes.hpp: prototypes for modes of operation functions
+*/
 #ifndef AES_MODES_HPP
 #define AES_MODES_HPP
 
