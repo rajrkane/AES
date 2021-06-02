@@ -40,14 +40,14 @@ bool encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
                  const std::vector<unsigned char> &key) noexcept(true) {
     try {
         // Calculate padding length, then copy input array and padding into plaintext
-        // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+        
         const std::size_t inputSize = input.size();
         const std::size_t padLength = NUM_BYTES - (inputSize % NUM_BYTES);
         const std::size_t plaintextLength = inputSize + padLength;
 
         // Plaintext accommodates both the input and the necessary padding
         std::vector<unsigned char> plaintext;
-        // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+        
         plaintext.reserve(plaintextLength);
         plaintext = input;
 
@@ -75,7 +75,7 @@ bool encrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy encrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(outputBlock.at(j));
             }
         }
@@ -115,7 +115,7 @@ bool decrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
             // Loop over block size and fill each block
             std::array<unsigned char, NUM_BYTES> block{0};
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 block.at(j) = input.at(j + (i * NUM_BYTES));
             }
 
@@ -125,7 +125,7 @@ bool decrypt_ecb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy decrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(outputPadded.at(j));
             }
         }
@@ -187,7 +187,7 @@ bool encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
         // Encrypt the first block
         std::array<unsigned char, NUM_BYTES> block{0};
         for (std::size_t j = 0; j < NUM_BYTES; j++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             block.at(j) = plaintext.at(j) ^ IV.at(j);
         }
 
@@ -195,7 +195,7 @@ bool encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
         encrypt(block, outputBlock, key);
 
         for (std::size_t j = 0; j < NUM_BYTES; j++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             output.push_back(outputBlock.at(j));
         }
 
@@ -203,7 +203,7 @@ bool encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
         for (std::size_t i = 1; i < plaintextLength / NUM_BYTES; i++) {
             // Loop over block size and fill each block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 block.at(j) = plaintext.at(j + (i * NUM_BYTES)) ^ output.at(j + ((i - 1) * NUM_BYTES));
             }
 
@@ -212,7 +212,7 @@ bool encrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy encrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(outputBlock.at(j));
             }
         }
@@ -250,7 +250,7 @@ bool decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
         // Decrypt the first block
         std::array<unsigned char, NUM_BYTES> block{0};
         for (std::size_t i = 0; i < NUM_BYTES; i++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             block.at(i) = input.at(i);
         }
 
@@ -258,7 +258,7 @@ bool decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
         decrypt(block, outputPadded, key);
 
         for (std::size_t i = 0; i < NUM_BYTES; i++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             outputPadded.at(i) ^= IV.at(i);
             output.push_back(outputPadded.at(i));
         }
@@ -268,7 +268,7 @@ bool decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Loop over block size and fill each block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 block.at(j) = input.at(j + (i * NUM_BYTES));
             }
 
@@ -277,7 +277,7 @@ bool decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy decrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 outputPadded.at(j) ^= input.at(j + ((i - 1) * NUM_BYTES));
                 output.push_back(outputPadded.at(j));
             }
@@ -311,7 +311,7 @@ bool decrypt_cbc(const std::vector<unsigned char> &input, std::vector<unsigned c
 void incrementCounter(std::array<unsigned char, NUM_BYTES> &counter, int numCounterBytes) noexcept(false) {
     for (int i = NUM_BYTES - 1; i >= numCounterBytes; i--) {
         //Increment the current byte
-        // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+        
         counter.at(i) = counter.at(i) + 1;
         //If the byte did not overflow to zero, then stop
         //Otherwise continue until an overflow does not happen
@@ -367,7 +367,7 @@ bool encrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             //XOR output with the plaintext and put into output block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(plaintext.at(j + (i * NUM_BYTES)) ^ outputBlock.at(j));
             }
 
@@ -407,12 +407,12 @@ bool decrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
         const std::size_t inputSize = input.size();
 
         std::array<unsigned char, NUM_BYTES> counter{0};
-        // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+        
         counter.fill(0);
         std::copy(nonce.begin(), nonce.end(), counter.begin());
 
         std::array<unsigned char, NUM_BYTES> outputBlock{0};
-        // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+        
         outputBlock.fill(0);
 
         for (std::size_t i = 0; i < inputSize / NUM_BYTES; i++) {
@@ -421,7 +421,7 @@ bool decrypt_ctr(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             //XOR output with the plaintext and put into output block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(input.at(j + (i * NUM_BYTES)) ^ outputBlock.at(j));
             }
 
@@ -488,7 +488,7 @@ bool encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
         encrypt(block, outputBlock, key);
 
         for (std::size_t j = 0; j < NUM_BYTES; j++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             output.push_back(outputBlock.at(j) ^ plaintext.at(j));
         }
 
@@ -496,7 +496,7 @@ bool encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
         for (std::size_t i = 1; i < plaintextLength / NUM_BYTES; i++) {
             // Loop over block size and fill each block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 block.at(j) = output.at(j + ((i - 1) * NUM_BYTES));
             }
 
@@ -505,7 +505,7 @@ bool encrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy encrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(outputBlock.at(j) ^ plaintext.at(j + (i * NUM_BYTES)));
             }
         }
@@ -543,13 +543,13 @@ bool decrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
         std::array<unsigned char, NUM_BYTES> block{0};
         std::array<unsigned char, NUM_BYTES> outputBlock{0};
 
-        // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+        
         std::copy(IV.begin(), IV.end(), block.begin());
 
         encrypt(block, outputBlock, key);
 
         for (std::size_t j = 0; j < NUM_BYTES; j++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             output.push_back(outputBlock.at(j) ^ input.at(j));
         }
 
@@ -557,7 +557,7 @@ bool decrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
         for (std::size_t i = 1; i < inputSize / NUM_BYTES; i++) {
             // Loop over block size and fill each block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 block.at(j) = input.at(j + ((i - 1) * NUM_BYTES));
             }
 
@@ -566,7 +566,7 @@ bool decrypt_cfb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy encrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(outputBlock.at(j) ^ input.at(j + (i * NUM_BYTES)));
             }
         }
@@ -624,13 +624,13 @@ bool encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
         std::array<unsigned char, NUM_BYTES> block{0};
         std::array<unsigned char, NUM_BYTES> outputBlock{0};
 
-        // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+        
         std::copy(IV.begin(), IV.end(), block.begin());
 
         encrypt(block, outputBlock, key);
 
         for (std::size_t j = 0; j < NUM_BYTES; j++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             output.push_back(outputBlock.at(j) ^ plaintext.at(j));
         }
 
@@ -638,7 +638,7 @@ bool encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
         for (std::size_t i = 1; i < plaintextLength / NUM_BYTES; i++) {
             // Loop over block size and fill each block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 block.at(j) = outputBlock.at(j);
             }
 
@@ -647,7 +647,7 @@ bool encrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy encrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(outputBlock.at(j) ^ plaintext.at(j + (i * NUM_BYTES)));
             }
         }
@@ -687,13 +687,13 @@ bool decrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
         std::array<unsigned char, NUM_BYTES> block{0};
         std::array<unsigned char, NUM_BYTES> outputBlock{0};
 
-        // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+        
         std::copy(IV.begin(), IV.end(), block.begin());
 
         encrypt(block, outputBlock, key);
 
         for (std::size_t j = 0; j < NUM_BYTES; j++) {
-            // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+            
             output.push_back(outputBlock.at(j) ^ input.at(j));
         }
 
@@ -701,7 +701,7 @@ bool decrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
         for (std::size_t i = 1; i < inputSize / NUM_BYTES; i++) {
             // Loop over block size and fill each block
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 block.at(j) = outputBlock.at(j);
             }
 
@@ -710,7 +710,7 @@ bool decrypt_ofb(const std::vector<unsigned char> &input, std::vector<unsigned c
 
             // Copy encrypted block to the output
             for (std::size_t j = 0; j < NUM_BYTES; j++) {
-                // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+                
                 output.push_back(outputBlock.at(j) ^ input.at(j + (i * NUM_BYTES)));
             }
         }

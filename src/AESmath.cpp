@@ -66,7 +66,7 @@ void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned ch
 	int Nk = keysize / 4;
 	int Nr = (Nk + 6);
 
-	for (std::size_t i = 0 ; i < keysize; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+	for (std::size_t i = 0 ; i < keysize; i++) {
 		expansion[i] = key[i];
 	}
 
@@ -74,7 +74,7 @@ void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned ch
 
 	// i < Nb * (Nr + 1)
 	//The number of bytes in a word is 4
-	for(std::size_t i = Nk; i < (4 * (Nr + 1)); i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+	for(std::size_t i = Nk; i < (4 * (Nr + 1)); i++) {
 		temp[0] = expansion[(4 * (i - 1))];
 		temp[1] = expansion[(4 * (i - 1)) + 1];
 		temp[2] = expansion[(4 * (i - 1)) + 2];
@@ -122,7 +122,7 @@ void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned ch
   @return none
 */
 void addRoundKey(std::array<unsigned char, 16>& state, unsigned char* key) {
-	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+	for (std::size_t i = 0; i < NUM_BYTES; i++) {
 		state[i] = state[i] ^ key[i];
 	}
 }

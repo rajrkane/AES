@@ -36,8 +36,8 @@ void invShiftRows(std::array<unsigned char, NUM_BYTES>& state) {
   shiftedState[11] = state[15];
   shiftedState[15] = state[3];
 
-  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
-    state[i] = shiftedState[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+  for (std::size_t i = 0; i < NUM_BYTES; i++) {
+    state[i] = shiftedState[i]; 
   }
 }
 
@@ -48,7 +48,7 @@ void invShiftRows(std::array<unsigned char, NUM_BYTES>& state) {
   @return none
 */
 void invSubBytes(std::array<unsigned char, NUM_BYTES>& state) {
-  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+  for (std::size_t i = 0; i < NUM_BYTES; i++) {
     state[i] = invGetSboxValue(state[i]);
   }
 }
@@ -62,15 +62,15 @@ void invSubBytes(std::array<unsigned char, NUM_BYTES>& state) {
 void invMixColumns(std::array<unsigned char, NUM_BYTES>& state) {
   std::array<unsigned char, NUM_BYTES> tmp;
 
-	for (std::size_t i = 0; i < 4; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+	for (std::size_t i = 0; i < 4; i++) {
 		tmp[4 * i] = galoisFieldMult(0x0e, state[i * 4]) ^ galoisFieldMult(0x0b, state[i * 4 + 1]) ^ galoisFieldMult(0x0d, state[i * 4 + 2]) ^ galoisFieldMult(0x09, state[i * 4 + 3]);
 		tmp[4 * i + 1] = galoisFieldMult(0x09, state[i * 4]) ^ galoisFieldMult(0x0e, state[i * 4 + 1]) ^ galoisFieldMult(0x0b, state[i * 4 + 2]) ^ galoisFieldMult(0x0d, state[i * 4 + 3]);
 		tmp[4 * i + 2] = galoisFieldMult(0x0d, state[i * 4]) ^ galoisFieldMult(0x09, state[i * 4 + 1]) ^ galoisFieldMult(0x0e, state[i * 4 + 2]) ^ galoisFieldMult(0x0b, state[i * 4 + 3]);
 		tmp[4 * i + 3] = galoisFieldMult(0x0b, state[i * 4]) ^ galoisFieldMult(0x0d, state[i * 4 + 1]) ^ galoisFieldMult(0x09, state[i * 4 + 2]) ^ galoisFieldMult(0x0e, state[i * 4 + 3]);
 	}
 
-	for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
-		state[i] = tmp[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+	for (std::size_t i = 0; i < NUM_BYTES; i++) {
+		state[i] = tmp[i]; 
 	}
 }
 
@@ -86,8 +86,8 @@ void invMixColumns(std::array<unsigned char, NUM_BYTES>& state) {
 void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>& output, const std::vector<unsigned char>& key) {
   // Create the state array from input
   std::array<unsigned char, NUM_BYTES> state;
-  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
-    state[i] = input[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+  for (std::size_t i = 0; i < NUM_BYTES; i++) {
+    state[i] = input[i]; 
   }
 
   // Expand key
@@ -101,7 +101,7 @@ void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>&
   addRoundKey(state, &(expandedKey[numRounds*NUM_BYTES]));
 
   // Rounds
-  for (std::size_t round = numRounds-1; round > 0; round--){ // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
+  for (std::size_t round = numRounds-1; round > 0; round--){
     invShiftRows(state);
     invSubBytes(state);
     addRoundKey(state, &(expandedKey[round*NUM_BYTES]));
@@ -114,7 +114,7 @@ void decrypt(std::array<unsigned char, 16> input, std::array<unsigned char, 16>&
   addRoundKey(state, &(expandedKey[0]));
 
   // Set output to state
-  for (std::size_t i = 0; i < NUM_BYTES; i++) { // Secure coding: CTR50-CPP. Guarantee that container indices and iterators are within the valid range
-    output[i] = state[i]; // Secure coding: OOP57-CPP. Prefer special member functions and overloaded operators to C Standard Library functions
+  for (std::size_t i = 0; i < NUM_BYTES; i++) {
+    output[i] = state[i]; 
   }
 }

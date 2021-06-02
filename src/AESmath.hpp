@@ -14,7 +14,7 @@ unsigned char galoisFieldMult(unsigned char a, unsigned char b);
 unsigned char galoisFieldInv(unsigned char a);
 unsigned char getSboxValue(unsigned char index);
 unsigned char invGetSboxValue(unsigned char index);
-void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned char>&  expansion, unsigned char keysize); // Secure coding: DCL52-CPP. Never qualify a reference type with const or volatile
+void keyExpansion(const std::vector<unsigned char>& key, std::vector<unsigned char>&  expansion, unsigned char keysize);
 void addRoundKey(std::array<unsigned char, 16>& state, unsigned char* key);
 
 #endif
